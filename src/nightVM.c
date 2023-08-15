@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +12,7 @@
 #include "libnightVM.h"
 
 static int throw_err(nightVM_l reg_pc_val, nightVM_l reg_sp_val, unsigned char code){
-  char *err_arr[]={"error: panic", "error: failed to open library", "error: failed to invoke symbol", "error: illegal instruction", "error: access outside of code", "implementation error: internal allocation failed", "implementation error: failed to open input", "implementation error: failed to read from input", "implementation error: input is not a valid ESXF", "implementation error: invalid ESXF magic number", "implementation error: unsupported ESFF used", "implementation error: failed to create hash table", "implementation error: could not put entry into hash table"};
+  char *err_arr[]={"error: panic", "error: failed to open library", "error: failed to invoke symbol", "error: illegal instruction", "error: access outside of code", "implementation error: internal allocation failed", "implementation error: failed to open input", "implementation error: failed to read from input", "implementation error: input is not a valid ESXF", "implementation error: invalid ESXF magic number", "implementation error: unsupported ESFF used", "implementation error: failed to create hash table", "implementation error: failed to put entry into hash table"};
   fprintf(stderr,"%s (at %" PRINVML "; stack pointer at %" PRINVML ")\n",err_arr[code],reg_pc_val,reg_sp_val);
   return code;
 }
@@ -153,30 +151,21 @@ int main(int argc, char *argv[]){
     free(lib_names);
     return throw_err(0,0,err_failed_allocation-1);
   }
-  struct hsearch_data lib_table={0};
-  struct hsearch_data sym_table={0};
-  if(hcreate_r(65536,&lib_table)==0){
+  if(hcreate(65536)==0){
     free(sym_names);
     free(lib_names);
-    close_opened_libs(opened_libs);
-    free(opened_libs);
-    return throw_err(0,0,err_failed_to_create_hash_table-1);
-  }
-  if(hcreate_r(65536,&sym_table)==0){
-    free(sym_names);
-    free(lib_names);
-    hdestroy_r(&lib_table);
     close_opened_libs(opened_libs);
     free(opened_libs);
     return throw_err(0,0,err_failed_to_create_hash_table-1);
   }
   unsigned int exit_status;
-  int exit_code=eval(argc-args_start,&argv[args_start],&stack[stack_base],&code,code_alignment,&heap,heap_alignment,reg,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names,lib_table,sym_table);
+  int exit_code=eval(argc-args_start,&argv[args_start],&stack[stack_base],&code,code_alignment,&heap,heap_alignment,reg,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names);
   if(exit_status){
     throw_err(reg[reg_pc],reg[reg_sp],exit_code-1);
   }
-  free_sym_table(sym_table,sym_names,sym_pt);
-  free_lib_table(lib_table,lib_names,lib_pt);
+  hdestroy();
+  free_sym_names(sym_names,sym_pt);
+  free_lib_names(lib_names,lib_pt);
   close_opened_libs(opened_libs);
   free(opened_libs);
   free(code);

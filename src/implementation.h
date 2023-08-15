@@ -28,7 +28,7 @@
 #define err_invalid_magic 10
 #define err_invalid_specification_version 11
 #define err_failed_to_create_hash_table 12
-#define err_hash_table_search 13
+#define err_hash_table_enter 13
 #define err_other 14
 
 typedef unsigned long nightVM_uns;

@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
@@ -99,27 +97,25 @@ void close_opened_libs(char **opened_libs){
   }
 }
 
-void free_lib_table(struct hsearch_data lib_table, char **lib_names, size_t lib_size){
+void free_lib_names(char **lib_names, size_t lib_size){
   if(lib_names!=NULL){
     for(size_t i=0;i<lib_size;i++){
       free(lib_names[i]);
     }
     free(lib_names);
   }
-  hdestroy_r(&lib_table);
 }
 
-void free_sym_table(struct hsearch_data sym_table, char **sym_names, size_t sym_size){
+void free_sym_names(char **sym_names, size_t sym_size){
   if(sym_names!=NULL){
     for(size_t i=0;i<sym_size;i++){
       free(sym_names[i]);
     }
     free(sym_names);
   }
-  hdestroy_r(&sym_table);
 }
 
-unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l *reg, unsigned int *exit_status, unsigned int load_type, char **opened_libs, size_t *lib_pt, size_t *sym_pt, char **lib_names, char **sym_names, struct hsearch_data lib_table, struct hsearch_data sym_table){
+unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l *reg, unsigned int *exit_status, unsigned int load_type, char **opened_libs, size_t *lib_pt, size_t *sym_pt, char **lib_names, char **sym_names){
   *exit_status=0;
   char resolved_name[PATH_MAX];
   char *str;
@@ -1327,8 +1323,7 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       }
       free(str);
       hash_table_entry.key=resolved_name;
-      hsearch_r(hash_table_entry,FIND,&hash_table_entry_ret,&lib_table);
-      if(hash_table_entry_ret==NULL){
+      if(hsearch(hash_table_entry,FIND)==NULL){
         hash_table_entry.data=dlopen(hash_table_entry.key,RTLD_LAZY|RTLD_LOCAL);
         if(hash_table_entry.data==NULL){
           *exit_status=1;
@@ -1343,9 +1338,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
         hash_table_entry.key=lib_names[*lib_pt];
         (*lib_pt)++;
         opened_libs[*lib_pt]=NULL;
-        if(hsearch_r(hash_table_entry,ENTER,&hash_table_entry_ret,&lib_table)==0){
+        if(hsearch(hash_table_entry,ENTER)==NULL){
           *exit_status=1;
-          return err_hash_table_search;
+          return err_hash_table_enter;
         }
       }
       reg[reg_sp]--;
@@ -1374,16 +1369,14 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       }
       free(str);
       hash_table_entry.key=resolved_name;
-      hsearch_r(hash_table_entry,FIND,&hash_table_entry_ret,&lib_table);
-      if(hash_table_entry_ret!=NULL){
+      if((hash_table_entry_ret=hsearch(hash_table_entry,FIND))!=NULL){
         void *object=hash_table_entry_ret->data;
         if((str=cseq2str(&((nightVM_c *)*code)[stack[reg[reg_sp]+1]]))==NULL){
           *exit_status=1;
           return err_failed_allocation;
         }
         hash_table_entry.key=str;
-        hsearch_r(hash_table_entry,FIND,&hash_table_entry_ret,&sym_table);
-        if(hash_table_entry_ret==NULL){
+        if((hash_table_entry_ret=hsearch(hash_table_entry,FIND))==NULL){
           hash_table_entry.data=dlsym(object,hash_table_entry.key);
           if(hash_table_entry.data==NULL){
             free(str);
@@ -1399,9 +1392,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
           hash_table_entry.key=sym_names[*sym_pt];
           free(str);
           (*sym_pt)++;
-          if(hsearch_r(hash_table_entry,ENTER,&hash_table_entry_ret,&sym_table)==0){
+          if(hsearch(hash_table_entry,ENTER)==NULL){
             *exit_status=1;
-            return err_hash_table_search;
+            return err_hash_table_enter;
           }
           hash_table_entry_ret=&hash_table_entry;
         }
