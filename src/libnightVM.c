@@ -147,7 +147,19 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
   ENTRY *hash_table_entry_ret;
   void (*symbol)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr);
   nightVM_uc *code_uc=*code;
+  nightVM_us *code_us=*code;
+  nightVM_ui *code_ui=*code;
+  nightVM_c *code_c=*code;
+  nightVM_s *code_s=*code;
+  nightVM_i *code_i=*code;
+  nightVM_l *code_l=*code;
   nightVM_uc *heap_uc=*heap;
+  nightVM_us *heap_us=*heap;
+  nightVM_ui *heap_ui=*heap;
+  nightVM_c *heap_c=*heap;
+  nightVM_s *heap_s=*heap;
+  nightVM_i *heap_i=*heap;
+  nightVM_l *heap_l=*heap;
   nightVM_uc uc, uc_1;
   nightVM_us us, us_1;
   nightVM_ui ui, ui_1;
@@ -804,7 +816,7 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=l;
       reg[reg_pc]++;
       break;
-    case op_ldcuc: case op_aldcuc:
+    case op_ldcuc:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -814,7 +826,16 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=uc;
       reg[reg_pc]++;
       break;
-    case op_ldcus: case op_aldcus:
+    case op_aldcuc:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_uc[stack[reg[reg_sp]]];
+      reg[reg_pc]++;
+      break;
+    case op_ldcus:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -824,7 +845,16 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=us;
       reg[reg_pc]++;
       break;
-    case op_ldcui: case op_aldcui:
+    case op_aldcus:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_us[stack[reg[reg_sp]]/SIZEOF_US];
+      reg[reg_pc]++;
+      break;
+    case op_ldcui:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -834,7 +864,16 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=ui;
       reg[reg_pc]++;
       break;
-    case op_ldcc: case op_aldcc:
+    case op_aldcui:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_ui[stack[reg[reg_sp]]/SIZEOF_UI];
+      reg[reg_pc]++;
+      break;
+    case op_ldcc:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -844,7 +883,16 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=c;
       reg[reg_pc]++;
       break;
-    case op_ldcs: case op_aldcs:
+    case op_aldcc:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_c[stack[reg[reg_sp]]];
+      reg[reg_pc]++;
+      break;
+    case op_ldcs:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -854,7 +902,16 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=s;
       reg[reg_pc]++;
       break;
-    case op_ldci: case op_aldci:
+    case op_aldcs:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_s[stack[reg[reg_sp]]/SIZEOF_S];
+      reg[reg_pc]++;
+      break;
+    case op_ldci:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -864,7 +921,16 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       stack[reg[reg_sp]-1]=i;
       reg[reg_pc]++;
       break;
-    case op_ldcl: case op_aldcl:
+    case op_aldci:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_i[stack[reg[reg_sp]]/SIZEOF_I];
+      reg[reg_pc]++;
+      break;
+    case op_ldcl:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
         reg[reg_ia]=stack[reg[reg_sp]-1];
@@ -873,79 +939,151 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       memcpy(&stack[reg[reg_sp]-1],&code_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_l));
       reg[reg_pc]++;
       break;
-    case op_ldhuc: case op_aldhuc:
+    case op_aldcl:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      stack[reg[reg_sp]-1]=code_l[stack[reg[reg_sp]]/SIZEOF_L];
+      reg[reg_pc]++;
+      break;
+    case op_ldhuc:
       memcpy(&uc,&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_uc));
       stack[reg[reg_sp]-1]=uc;
       reg[reg_pc]++;
       break;
-    case op_ldhus: case op_aldhus:
+    case op_aldhuc:
+      stack[reg[reg_sp]-1]=heap_uc[stack[reg[reg_sp]]];
+      reg[reg_pc]++;
+      break;
+    case op_ldhus:
       memcpy(&us,&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_us));
       stack[reg[reg_sp]-1]=us;
       reg[reg_pc]++;
       break;
-    case op_ldhui: case op_aldhui:
+    case op_aldhus:
+      stack[reg[reg_sp]-1]=heap_uc[stack[reg[reg_sp]]/SIZEOF_US];
+      reg[reg_pc]++;
+      break;
+    case op_ldhui:
       memcpy(&ui,&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_ui));
       stack[reg[reg_sp]-1]=ui;
       reg[reg_pc]++;
       break;
-    case op_ldhc: case op_aldhc:
+    case op_aldhui:
+      stack[reg[reg_sp]-1]=heap_ui[stack[reg[reg_sp]]/SIZEOF_UI];
+      reg[reg_pc]++;
+      break;
+    case op_ldhc:
       memcpy(&c,&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_c));
       stack[reg[reg_sp]-1]=c;
       reg[reg_pc]++;
       break;
-    case op_ldhs: case op_aldhs:
+    case op_aldhc:
+      stack[reg[reg_sp]-1]=heap_c[stack[reg[reg_sp]]];
+      reg[reg_pc]++;
+      break;
+    case op_ldhs:
       memcpy(&s,&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_s));
       stack[reg[reg_sp]-1]=s;
       reg[reg_pc]++;
       break;
-    case op_ldhi: case op_aldhi:
+    case op_aldhs:
+      stack[reg[reg_sp]-1]=heap_s[stack[reg[reg_sp]]/SIZEOF_S];
+      reg[reg_pc]++;
+      break;
+    case op_ldhi:
       memcpy(&i,&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_i));
       stack[reg[reg_sp]-1]=i;
       reg[reg_pc]++;
       break;
-    case op_ldhl: case op_aldhl:
+    case op_aldhi:
+      stack[reg[reg_sp]-1]=heap_i[stack[reg[reg_sp]]/SIZEOF_I];
+      reg[reg_pc]++;
+      break;
+    case op_ldhl:
       memcpy(&stack[reg[reg_sp]-1],&heap_uc[stack[reg[reg_sp]-1]],sizeof(nightVM_l));
       reg[reg_pc]++;
       break;
-    case op_sthuc: case op_asthuc:
+    case op_aldhl:
+      stack[reg[reg_sp]-1]=heap_l[stack[reg[reg_sp]]/SIZEOF_L];
+      reg[reg_pc]++;
+      break;
+    case op_sthuc:
       uc=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&uc,sizeof(nightVM_uc));
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
-    case op_sthus: case op_asthus:
+    case op_asthuc:
+      heap_uc[stack[reg[reg_sp]-1]]=stack[reg[reg_sp]-2];;
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_sthus:
       us=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&us,sizeof(nightVM_us));
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
-    case op_sthui: case op_asthui:
+    case op_asthus:
+      heap_us[stack[reg[reg_sp]-1]/SIZEOF_US]=stack[reg[reg_sp]-2];;
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_sthui:
       ui=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&ui,sizeof(nightVM_ui));
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
-    case op_sthc: case op_asthc:
+    case op_asthui:
+      heap_ui[stack[reg[reg_sp]-1]/SIZEOF_UI]=stack[reg[reg_sp]-2];;
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_sthc:
       c=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&c,sizeof(nightVM_c));
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
-    case op_sths: case op_asths:
+    case op_asthc:
+      heap_c[stack[reg[reg_sp]-1]]=stack[reg[reg_sp]-2];;
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_sths:
       s=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&s,sizeof(nightVM_s));
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
-    case op_sthi: case op_asthi:
+    case op_asths:
+      heap_s[stack[reg[reg_sp]-1]/SIZEOF_S]=stack[reg[reg_sp]-2];;
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_sthi:
       i=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&i,sizeof(nightVM_i));
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
-    case op_sthl: case op_asthl:
+    case op_asthi:
+      heap_i[stack[reg[reg_sp]-1]/SIZEOF_I]=stack[reg[reg_sp]-2];;
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_sthl:
       l=stack[reg[reg_sp]-2];
       memcpy(&heap_uc[stack[reg[reg_sp]-1]],&l,sizeof(nightVM_l));
+      reg[reg_sp]-=2;
+      reg[reg_pc]++;
+      break;
+    case op_asthl:
+      heap_us[stack[reg[reg_sp]-1]/SIZEOF_L]=stack[reg[reg_sp]-2];;
       reg[reg_sp]-=2;
       reg[reg_pc]++;
       break;
