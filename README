@@ -1,0 +1,13 @@
++--------------------------------+
+| Installation guide for nightVM |
++--------------------------------+
+
+Check ./src/ for the source of nightVM. It is assumed that, during translation, a preprocessing directive of the form
+
+# include "q-char-sequence" new-line
+
+searches for the named source file the way it is defined in SUSv4-2018 4.13 (Pathname resolution).
+
+NightVM does not exactly conform to the ISO/IEC 2899:2011 standard. Even though most of the code is conforming, the behavior of some constructs depend on guarantees provided by SUSv4-2018.
+
+To get nightVM working, just translate ./src/libnightVM.c and ./src/nightVM.c, and link them.
