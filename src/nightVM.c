@@ -5,16 +5,28 @@
 #include <time.h>
 #include <search.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "implementation.h"
-#include "alloc.h"
-
 #include "libnightVM.h"
 
 static int throw_err(nightVM_l reg_pc_val, nightVM_l reg_sp_val, unsigned char code){
   char *err_arr[]={"error: panic", "error: failed to open library", "error: failed to invoke symbol", "error: illegal instruction", "error: access outside of code", "implementation error: internal allocation failed", "implementation error: failed to open input", "implementation error: failed to read from input", "implementation error: input is not a valid ESXF", "implementation error: invalid ESXF magic number", "implementation error: unsupported ESFF used", "implementation error: failed to create hash table", "implementation error: failed to put entry into hash table"};
   fprintf(stderr,"%s (at %" PRINVML "; stack pointer at %" PRINVML ")\n",err_arr[code],reg_pc_val,reg_sp_val);
   return code;
+}
+
+static inline void *aligned_malloc(size_t alignment, size_t size){
+  void *return_mem;
+  if(size==0 || alignment%sizeof(void *)!=0 || ceil(log2l(alignment))!=floor(log2l(alignment))){
+    return NULL;
+  }
+  else if(posix_memalign(&return_mem,alignment,size)==0){
+    return return_mem;
+  }
+  else{
+    return NULL;
+  }
 }
 
 int main(int argc, char *argv[]){
@@ -25,7 +37,6 @@ int main(int argc, char *argv[]){
   nightVM_l reg[1+reg_gpr0+7];
   char *in_file_name="./a.esxf";
   bool randomize_code_base=false;
-  bool randomize_stack_base=false;
   int args_start=0;
   for(int i=1;i<argc;i++){
     if(strcmp(argv[i],"-i")==0 || strcmp(argv[i],"--input")==0){
@@ -48,9 +59,6 @@ int main(int argc, char *argv[]){
     }
     else if(strcmp(argv[i],"-rc")==0 || strcmp(argv[i],"--randomize-code-base")==0){
       randomize_code_base=true;
-    }
-    else if(strcmp(argv[i],"-rs")==0 || strcmp(argv[i],"--randomize-stack-base")==0){
-      randomize_stack_base=true;
     }
     else if(strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--credits")==0){
       printf("\
@@ -80,7 +88,6 @@ int main(int argc, char *argv[]){
       fprintf(stderr,"    --help (-h): display this message and quit\n");
       fprintf(stderr,"*   --input (-i) file [args...]: specify the input file (default: %s); optional arguments following the file are supplied to the loaded program\n",in_file_name);
       fprintf(stderr,"    --randomize-code-base (-rc): randomize the base address of the code\n");
-      fprintf(stderr,"    --randomize-stack-base (-rs): randomize the base address of the stack\n");
       fprintf(stderr,"    --credits (-c): display license information and quit\n");
       fprintf(stderr,"    --about (-a): display information about this implementation and quit\n\n");
 
@@ -115,19 +122,9 @@ int main(int argc, char *argv[]){
     free(nonrandomized_code);
   }
   reg[reg_cb]=code_base;
-  int_fast64_t stack_base=0;
-  if(randomize_stack_base){
-    stack_base=(rand()%MAX_STACK_BASE)+1;
-    if((stack=aligned_malloc(_Alignof(nightVM_l),reg[reg_ssz]+stack_base*sizeof(nightVM_l)))==NULL){
-      free(code);
-      return throw_err(0,0,err_failed_allocation-1);
-    }
-  }
-  else{
-    if((stack=aligned_malloc(_Alignof(nightVM_l),reg[reg_ssz]*sizeof(nightVM_l)))==NULL){
-      free(code);
-      return throw_err(0,0,err_failed_allocation-1);
-    }
+  if((stack=aligned_malloc(_Alignof(nightVM_l),reg[reg_ssz]*sizeof(nightVM_l)))==NULL){
+    free(code);
+    return throw_err(0,0,err_failed_allocation-1);
   }
   if((heap=aligned_malloc(heap_alignment*sizeof(nightVM_uc),reg[reg_hsz]*sizeof(nightVM_uc)))==NULL){
     free(code);
@@ -159,7 +156,7 @@ int main(int argc, char *argv[]){
     return throw_err(0,0,err_failed_to_create_hash_table-1);
   }
   unsigned int exit_status;
-  int exit_code=eval(argc-args_start,&argv[args_start],&stack[stack_base],&code,code_alignment,&heap,heap_alignment,reg,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names);
+  int exit_code=eval(argc-args_start,&argv[args_start],stack,&code,code_alignment,&heap,heap_alignment,reg,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names);
   if(exit_status){
     throw_err(reg[reg_pc],reg[reg_sp],exit_code-1);
   }

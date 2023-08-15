@@ -1,7 +1,6 @@
 #ifndef NVM_LIBNIGHTVM_H
 #define NVM_LIBNIGHTVM_H
 
-#include "alloc.h"
 #include "implementation.h"
 #include "opcodes.h"
 
