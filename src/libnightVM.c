@@ -1224,9 +1224,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_pc]++;
       break;
     case op_rjgt:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]>stack[reg[reg_sp]-3]){
@@ -1238,9 +1238,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=3;
       break;
     case op_rjls:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]<stack[reg[reg_sp]-3]){
@@ -1252,9 +1252,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=3;
       break;
     case op_rjeq:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]==stack[reg[reg_sp]-3]){
@@ -1266,9 +1266,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=3;
       break;
     case op_rjle:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]<=stack[reg[reg_sp]-3]){
@@ -1280,9 +1280,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=3;
       break;
     case op_rjge:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]>=stack[reg[reg_sp]-3]){
@@ -1294,9 +1294,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=3;
       break;
     case op_rjne:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]!=stack[reg[reg_sp]-3]){
@@ -1308,9 +1308,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=3;
       break;
     case op_rjz:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]==0){
@@ -1322,9 +1322,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=2;
       break;
     case op_rjnz:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       if(stack[reg[reg_sp]-2]!=0){
@@ -1336,9 +1336,9 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       reg[reg_sp]-=2;
       break;
     case op_rjmp:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
         return err_trap;
       }
       reg[reg_pc]+=stack[reg[reg_sp]-1];
