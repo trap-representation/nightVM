@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
     if(strcmp(argv[i],"-i")==0 || strcmp(argv[i],"--input")==0){
       i++;
       if(i==argc){
-        fprintf(stderr,"expected a file-path after %s\n",argv[i-1]);
+        fprintf(stderr,"expected file [args...] after %s\n",argv[i-1]);
         return 1;
       }
       else{
