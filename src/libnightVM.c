@@ -1456,6 +1456,85 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       }
       reg[reg_sp]-=2;
       break;
+    case op_cgt:
+      if(stack[reg[reg_sp]-1]>stack[reg[reg_sp]-2]){
+        stack[reg[reg_sp]-2]=1;
+      }
+      else{
+        stack[reg[reg_sp]-2]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
+    case op_cls:
+      if(stack[reg[reg_sp]-1]<stack[reg[reg_sp]-2]){
+        stack[reg[reg_sp]-2]=1;
+      }
+      else{
+        stack[reg[reg_sp]-2]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
+    case op_ceq:
+      if(stack[reg[reg_sp]-1]==stack[reg[reg_sp]-2]){
+        stack[reg[reg_sp]-2]=1;
+      }
+      else{
+        stack[reg[reg_sp]-2]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
+    case op_cle:
+      if(stack[reg[reg_sp]-1]<=stack[reg[reg_sp]-2]){
+        stack[reg[reg_sp]-2]=1;
+      }
+      else{
+        stack[reg[reg_sp]-2]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
+    case op_cge:
+      if(stack[reg[reg_sp]-1]>=stack[reg[reg_sp]-2]){
+        stack[reg[reg_sp]-2]=1;
+      }
+      else{
+        stack[reg[reg_sp]-2]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
+    case op_cne:
+      if(stack[reg[reg_sp]-1]!=stack[reg[reg_sp]-2]){
+        stack[reg[reg_sp]-2]=1;
+      }
+      else{
+        stack[reg[reg_sp]-2]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
+    case op_cz:
+      if(stack[reg[reg_sp]-1]==0){
+        stack[reg[reg_sp]-1]=1;
+      }
+      else{
+        stack[reg[reg_sp]-1]=0;
+      }
+      reg[reg_pc]++;
+      break;
+    case op_cnz:
+      if(stack[reg[reg_sp]-1]!=0){
+        stack[reg[reg_sp]-1]=1;
+      }
+      else{
+        stack[reg[reg_sp]-1]=0;
+      }
+      reg[reg_sp]--;
+      reg[reg_pc]++;
+      break;
     case op_jmp:
       if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
         *exit_status=1;

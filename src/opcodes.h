@@ -184,19 +184,27 @@
 #define op_pushcs 178
 #define op_pushlt 179
 #define op_force_panic 180
+#define op_cgt 181
+#define op_cls 182
+#define op_ceq 183
+#define op_cne 184
+#define op_cle 185
+#define op_cge 186
+#define op_cz 187
+#define op_cnz 188
 
 /* extended instruction set */
 
-#define op_open 181
-#define op_invoke 182
-#define op_trap 183
-#define op_pushn1 184
-#define op_push0 185
-#define op_push1 186
-#define op_push2 187
-#define op_push3 188
-#define op_push4 189
-#define op_push5 190
-#define op_push7 191
+#define op_open 189
+#define op_invoke 190
+#define op_trap 191
+#define op_pushn1 192
+#define op_push0 193
+#define op_push1 194
+#define op_push2 195
+#define op_push3 196
+#define op_push4 197
+#define op_push5 198
+#define op_push7 199
 
 #endif
