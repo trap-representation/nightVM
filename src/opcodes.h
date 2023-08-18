@@ -192,19 +192,38 @@
 #define op_cge 186
 #define op_cz 187
 #define op_cnz 188
+#define op_call 189
+#define op_clgt 190
+#define op_clls 191
+#define op_cleq 192
+#define op_clne 193
+#define op_clle 194
+#define op_clge 195
+#define op_clz 196
+#define op_clnz 197
+#define op_ret 198
+#define op_rcall 199
+#define op_rclgt 200
+#define op_rclls 201
+#define op_rcleq 202
+#define op_rclne 203
+#define op_rclle 204
+#define op_rclge 205
+#define op_rclz 206
+#define op_rclnz 207
 
 /* extended instruction set */
 
-#define op_open 189
-#define op_invoke 190
-#define op_trap 191
-#define op_pushn1 192
-#define op_push0 193
-#define op_push1 194
-#define op_push2 195
-#define op_push3 196
-#define op_push4 197
-#define op_push5 198
-#define op_push7 199
+#define op_open 208
+#define op_invoke 209
+#define op_trap 210
+#define op_pushn1 211
+#define op_push0 212
+#define op_push1 213
+#define op_push2 214
+#define op_push3 215
+#define op_push4 216
+#define op_push5 217
+#define op_push7 218
 
 #endif

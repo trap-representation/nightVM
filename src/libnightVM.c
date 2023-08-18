@@ -81,6 +81,7 @@ unsigned int read_file(char *file, void **code, nightVM_ui *code_alignment, nigh
       }
       size_t read;
       reg[reg_cs]=0;
+      *code=NULL;
       while((read=fread(read_buf,sizeof(nightVM_uc),READBUF_SIZE,fp))){
         if(ferror(fp)){
           free(read_buf);
@@ -139,13 +140,13 @@ void free_sym_names(char **sym_names, size_t sym_size){
   }
 }
 
-unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l *reg, unsigned int *exit_status, unsigned int load_type, char **opened_libs, size_t *lib_pt, size_t *sym_pt, char **lib_names, char **sym_names){
+unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l *reg, nightVM_l *call_stack, unsigned int *exit_status, unsigned int load_type, char **opened_libs, size_t *lib_pt, size_t *sym_pt, char **lib_names, char **sym_names){
   *exit_status=0;
   char resolved_name[PATH_MAX];
   char *str;
   ENTRY hash_table_entry;
   ENTRY *hash_table_entry_ret;
-  void (*symbol)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr);
+  void (*symbol)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr, nightVM_l *call_stack, nightVM_l reg_clp_val);
   nightVM_uc *code_uc=*code;
   nightVM_us *code_us=*code;
   nightVM_ui *code_ui=*code;
@@ -1456,6 +1457,297 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       }
       reg[reg_sp]-=2;
       break;
+    case op_jmp:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      reg[reg_pc]=stack[reg[reg_sp]-1];
+      reg[reg_sp]--;
+      break;
+    case op_ret:
+      reg[reg_pc]=call_stack[reg[reg_clp]-1];
+      reg[reg_clp]--;
+      break;
+    case op_clgt:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]>stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_clls:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]<stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_cleq:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]==stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_clle:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]<=stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_clge:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]>=stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_clne:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]!=stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_clz:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]==0){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=2;
+      break;
+    case op_clnz:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]!=0){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=2;
+      break;
+    case op_call:
+      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+      reg[reg_clp]++;
+      reg[reg_pc]=stack[reg[reg_sp]-1];
+      reg[reg_sp]--;
+      break;
+    case op_rclgt:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]>stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_rclls:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]<stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_rcleq:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]==stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_rclle:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]<=stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_rclge:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]>=stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_rclne:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]!=stack[reg[reg_sp]-3]){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=3;
+      break;
+    case op_rclz:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]==0){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=2;
+      break;
+    case op_rclnz:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      if(stack[reg[reg_sp]-2]!=0){
+        call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+        reg[reg_clp]++;
+        reg[reg_pc]+=stack[reg[reg_sp]-1];
+      }
+      else{
+        reg[reg_pc]++;
+      }
+      reg[reg_sp]-=2;
+      break;
+    case op_rcall:
+      if(reg[reg_pc]+stack[reg[reg_sp]-1]>=reg[reg_cs] || reg[reg_pc]+stack[reg[reg_sp]-1]<reg[reg_cb]){
+        *exit_status=1;
+        reg[reg_ia]=reg[reg_pc]+stack[reg[reg_sp]-1];
+        return err_trap;
+      }
+      call_stack[reg[reg_clp]]=reg[reg_pc]+1;
+      reg[reg_clp]++;
+      reg[reg_pc]+=stack[reg[reg_sp]-1];
+      reg[reg_sp]--;
+      break;
     case op_cgt:
       if(stack[reg[reg_sp]-1]>stack[reg[reg_sp]-2]){
         stack[reg[reg_sp]-2]=1;
@@ -1534,15 +1826,6 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       }
       reg[reg_sp]--;
       reg[reg_pc]++;
-      break;
-    case op_jmp:
-      if(stack[reg[reg_sp]-1]>=reg[reg_cs] || stack[reg[reg_sp]-1]<reg[reg_cb]){
-        *exit_status=1;
-        reg[reg_ia]=stack[reg[reg_sp]-1];
-        return err_trap;
-      }
-      reg[reg_pc]=stack[reg[reg_sp]-1];
-      reg[reg_sp]--;
       break;
     case op_nop:
       reg[reg_pc]++;
@@ -1642,8 +1925,8 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
         else{
           free(str);
         }
-        symbol=(void (*)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr))hash_table_entry_ret->data;
-        symbol(argc,argv,stack,code,code_align,heap,heap_align,reg[reg_ssz],&reg[reg_hsz],&reg[reg_sp],&reg[reg_cs],reg[reg_pc],&reg[reg_gpr0]);
+        symbol=(void (*)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr, nightVM_l *call_stack, nightVM_l reg_clp_val))hash_table_entry_ret->data;
+        symbol(argc,argv,stack,code,code_align,heap,heap_align,reg[reg_ssz],&reg[reg_hsz],&reg[reg_sp],&reg[reg_cs],reg[reg_pc],&reg[reg_gpr0],call_stack,reg[reg_clp]);
         reg[reg_pc]++;
         break;
       }

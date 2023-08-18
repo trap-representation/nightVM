@@ -31,8 +31,9 @@ static inline void *aligned_malloc(size_t alignment, size_t size){
 
 int main(int argc, char *argv[]){
   nightVM_l *stack;
-  void *code=NULL;
+  void *code;
   void *heap;
+  nightVM_l *call_stack;
   uint32_t code_alignment, heap_alignment;
   nightVM_l reg[1+reg_gpr0+7];
   char *in_file_name="./a.esxf";
@@ -126,14 +127,24 @@ int main(int argc, char *argv[]){
     free(code);
     return throw_err(0,0,0,err_failed_allocation-1);
   }
+  reg[reg_sp]=0;
   if((heap=aligned_malloc(heap_alignment*sizeof(nightVM_uc),reg[reg_hsz]*sizeof(nightVM_uc)))==NULL){
     free(code);
     free(stack);
     return throw_err(0,0,0,err_failed_allocation-1);
   }
-  reg[reg_sp]=0;
+  if((call_stack=aligned_malloc(_Alignof(nightVM_l),512*sizeof(nightVM_l)))==NULL){
+    free(code);
+    free(stack);
+    free(call_stack);
+    return throw_err(0,0,0,err_failed_allocation-1);
+  }
+  reg[reg_clp]=0;
   char **opened_libs;
   if((opened_libs=malloc(65536*sizeof(char *)))==NULL){
+    free(code);
+    free(stack);
+    free(call_stack);
     return throw_err(0,0,0,err_failed_allocation-1);
   }
   opened_libs[0]=NULL;
@@ -141,14 +152,23 @@ int main(int argc, char *argv[]){
   size_t sym_pt=0;
   char **lib_names;
   if((lib_names=malloc(65536*sizeof(char *)))==NULL){
+    free(code);
+    free(stack);
+    free(call_stack);
     return throw_err(0,0,0,err_failed_allocation-1);
   }
   char **sym_names;
   if((sym_names=malloc(65536*sizeof(char *)))==NULL){
+    free(code);
+    free(stack);
+    free(call_stack);
     free(lib_names);
     return throw_err(0,0,0,err_failed_allocation-1);
   }
   if(hcreate(65536)==0){
+    free(code);
+    free(stack);
+    free(call_stack);
     free(sym_names);
     free(lib_names);
     close_opened_libs(opened_libs);
@@ -157,7 +177,7 @@ int main(int argc, char *argv[]){
   }
   reg[reg_ia]=0;
   unsigned int exit_status;
-  int exit_code=eval(argc-args_start,&argv[args_start],stack,&code,code_alignment,&heap,heap_alignment,reg,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names);
+  int exit_code=eval(argc-args_start,&argv[args_start],stack,&code,code_alignment,&heap,heap_alignment,reg,call_stack,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names);
   if(exit_status){
     throw_err(reg[reg_pc],reg[reg_sp],reg[reg_ia],exit_code-1);
   }
@@ -167,6 +187,7 @@ int main(int argc, char *argv[]){
   close_opened_libs(opened_libs);
   free(opened_libs);
   free(code);
+  free(call_stack);
   free(stack);
   free(heap);
   return exit_code;

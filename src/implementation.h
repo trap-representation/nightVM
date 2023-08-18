@@ -8,7 +8,8 @@
 #define reg_ssz 4
 #define reg_cb 5
 #define reg_ia 6
-#define reg_gpr0 7
+#define reg_clp 7
+#define reg_gpr0 8
 
 #define load_type_nembd 0
 #define load_type_embd 1
