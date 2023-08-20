@@ -9,7 +9,8 @@
 #define reg_cb 5
 #define reg_ia 6
 #define reg_clp 7
-#define reg_gpr0 8
+#define reg_lop 8
+#define reg_gpr0 9
 
 #define load_type_nembd 0
 #define load_type_embd 1
@@ -102,13 +103,13 @@ typedef char nightVM_c;
 #define ALIGNOF_I _Alignof(nightVM_i)/sizeof(nightVM_uc)
 #define ALIGNOF_L _Alignof(nightVM_l)/sizeof(nightVM_uc)
 
-static inline size_t cseqlen(nightVM_c *cseq){
+static size_t cseqlen(nightVM_c *cseq){
   size_t len=0;
   for(;cseq[len]!=0;len++);
   return len;
 }
 
-static inline char *cseq2str(nightVM_c *cseq){
+static char *cseq2str(nightVM_c *cseq){
   char *str;
   size_t len=cseqlen(cseq);
   if((str=malloc(len+1))==NULL){
@@ -121,7 +122,7 @@ static inline char *cseq2str(nightVM_c *cseq){
   return str;
 }
 
-static inline nightVM_c *str2cseq(char *str){
+static nightVM_c *str2cseq(char *str){
   nightVM_c *cseq;
   size_t len=0;
   for(;str[len]!='\0';len++);
@@ -135,7 +136,7 @@ static inline nightVM_c *str2cseq(char *str){
   return cseq;
 }
 
-static inline nightVM_c *cseqcpystr(nightVM_c *cseq, char *str, size_t size){
+static nightVM_c *cseqcpystr(nightVM_c *cseq, char *str, size_t size){
   for(size_t i=0;i<size && str[i]!='\0';i++){
     cseq[i]=str[i];
     cseq[i+1]=0;
@@ -143,7 +144,7 @@ static inline nightVM_c *cseqcpystr(nightVM_c *cseq, char *str, size_t size){
   return cseq;
 }
 
-static inline char *strcpycseq(char *str, nightVM_c *cseq, size_t size){
+static char *strcpycseq(char *str, nightVM_c *cseq, size_t size){
   for(size_t i=0;i<size && cseq[i]!='\0';i++){
     str[i]=cseq[i];
     str[i+1]=0;
@@ -151,7 +152,7 @@ static inline char *strcpycseq(char *str, nightVM_c *cseq, size_t size){
   return str;
 }
 
-static inline nightVM_c *cseqcpycseq(nightVM_c *cseq1, nightVM_c *cseq2, size_t size){
+static nightVM_c *cseqcpycseq(nightVM_c *cseq1, nightVM_c *cseq2, size_t size){
   for(size_t i=0;i<size && cseq2[i]!=0;i++){
     cseq1[i]=cseq2[i];
     cseq1[i+1]=0;
@@ -159,7 +160,7 @@ static inline nightVM_c *cseqcpycseq(nightVM_c *cseq1, nightVM_c *cseq2, size_t 
   return cseq1;
 }
 
-static inline int cseqcmpstr(nightVM_c *cseq, char *str){
+static int cseqcmpstr(nightVM_c *cseq, char *str){
   size_t lenc=cseqlen(cseq);
   for(size_t i=0;i<=lenc;i++){
     if(cseq[i]!=str[i]){
@@ -169,7 +170,7 @@ static inline int cseqcmpstr(nightVM_c *cseq, char *str){
   return 0;
 }
 
-static inline int cseqcmpcseq(nightVM_c *cseq1, nightVM_c *cseq2){
+static int cseqcmpcseq(nightVM_c *cseq1, nightVM_c *cseq2){
   size_t lenc1=cseqlen(cseq1);
   for(size_t i=0;i<=lenc1;i++){
     if(cseq1[i]!=cseq2[i]){

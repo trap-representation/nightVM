@@ -211,19 +211,20 @@
 #define op_rclge 205
 #define op_rclz 206
 #define op_rclnz 207
+#define op_rcback 208
 
 /* extended instruction set */
 
-#define op_open 208
-#define op_invoke 209
-#define op_trap 210
-#define op_pushn1 211
-#define op_push0 212
-#define op_push1 213
-#define op_push2 214
-#define op_push3 215
-#define op_push4 216
-#define op_push5 217
-#define op_push7 218
+#define op_open 209
+#define op_invoke 210
+#define op_trap 211
+#define op_pushn1 212
+#define op_push0 213
+#define op_push1 214
+#define op_push2 215
+#define op_push3 216
+#define op_push4 217
+#define op_push5 218
+#define op_push7 219
 
 #endif

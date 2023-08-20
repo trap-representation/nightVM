@@ -8,7 +8,7 @@
 
 #include "libnightVM.h"
 
-static inline void *aligned_malloc(size_t alignment, size_t size){
+static void *aligned_malloc(size_t alignment, size_t size){
   void *return_mem;
   if(size==0 || alignment%sizeof(void *)!=0 || ceil(log2l(alignment))!=floor(log2l(alignment))){
     return NULL;
@@ -21,7 +21,7 @@ static inline void *aligned_malloc(size_t alignment, size_t size){
   }
 }
 
-static inline void *aligned_realloc(void *ptr, size_t alignment, size_t size, size_t prev_size){
+static void *aligned_realloc(void *ptr, size_t alignment, size_t size, size_t prev_size){
   void *new_mem=aligned_malloc(alignment,size);
   if(new_mem!=NULL && ptr!=NULL){
     size_t size_to_copy=prev_size>size?size:prev_size;
@@ -146,7 +146,7 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
   char *str;
   ENTRY hash_table_entry;
   ENTRY *hash_table_entry_ret;
-  void (*symbol)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr, nightVM_l *call_stack, nightVM_l reg_clp_val);
+  void (*symbol)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l reg_lop_val, nightVM_l *call_stack, nightVM_l reg_clp_val, nightVM_l *gpr);
   nightVM_uc *code_uc=*code;
   nightVM_us *code_us=*code;
   nightVM_ui *code_ui=*code;
@@ -177,6 +177,7 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       return err_trap;
     }
     opcode=code_uc[reg[reg_pc]];
+    reg[reg_lop]=opcode;
     switch(opcode){
     case op_trap:
       *exit_status=1;
@@ -1824,7 +1825,6 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
       else{
         stack[reg[reg_sp]-1]=0;
       }
-      reg[reg_sp]--;
       reg[reg_pc]++;
       break;
     case op_nop:
@@ -1925,8 +1925,8 @@ unsigned int eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_
         else{
           free(str);
         }
-        symbol=(void (*)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l *gpr, nightVM_l *call_stack, nightVM_l reg_clp_val))hash_table_entry_ret->data;
-        symbol(argc,argv,stack,code,code_align,heap,heap_align,reg[reg_ssz],&reg[reg_hsz],&reg[reg_sp],&reg[reg_cs],reg[reg_pc],&reg[reg_gpr0],call_stack,reg[reg_clp]);
+        symbol=(void (*)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l reg_ssz_val, nightVM_l *reg_hsz_val, nightVM_l *reg_sp_val, nightVM_l *reg_cs_val, nightVM_l reg_pc_val, nightVM_l reg_lop_val, nightVM_l *call_stack, nightVM_l reg_clp_val, nightVM_l *gpr))hash_table_entry_ret->data;
+        symbol(argc,argv,stack,code,code_align,heap,heap_align,reg[reg_ssz],&reg[reg_hsz],&reg[reg_sp],&reg[reg_cs],reg[reg_pc],reg[reg_lop],call_stack,reg[reg_clp],&reg[reg_gpr0]);
         reg[reg_pc]++;
         break;
       }

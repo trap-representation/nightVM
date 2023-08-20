@@ -9,14 +9,15 @@
 
 #include "implementation.h"
 #include "libnightVM.h"
+#include "opcodes.h"
 
-static int throw_err(nightVM_l reg_pc_val, nightVM_l reg_sp_val, nightVM_l reg_ia_val, unsigned char code){
+static int throw_err(nightVM_l reg_pc_val, nightVM_l reg_sp_val, nightVM_l reg_ia_val, nightVM_l reg_lop_val, unsigned char code){
   char *err_arr[]={"error: panic", "error: failed to open library", "error: failed to invoke symbol", "error: illegal instruction", "error: access outside of code", "implementation error: internal allocation failed", "implementation error: failed to open input", "implementation error: failed to read from input", "implementation error: input is not a valid ESXF", "implementation error: invalid ESXF magic number", "implementation error: unsupported ESFF used", "implementation error: failed to create hash table", "implementation error: failed to put entry into hash table"};
-  fprintf(stderr,"%s (at %" PRINVML "; sp set to %" PRINVML "; ia set to %" PRINVML ")\n",err_arr[code],reg_pc_val,reg_sp_val,reg_ia_val);
+  fprintf(stderr,"%s (at %" PRINVML "; sp set to %" PRINVML "; ia set to %" PRINVML "; lop set to %" PRINVML ")\n",err_arr[code],reg_pc_val,reg_sp_val,reg_ia_val,reg_lop_val);
   return code;
 }
 
-static inline void *aligned_malloc(size_t alignment, size_t size){
+static void *aligned_malloc(size_t alignment, size_t size){
   void *return_mem;
   if(size==0 || alignment%sizeof(void *)!=0 || ceil(log2l(alignment))!=floor(log2l(alignment))){
     return NULL;
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]){
   }
   unsigned char ret;
   if((ret=read_file(in_file_name,&code,&code_alignment,&heap_alignment,reg))){
-    return throw_err(0,0,0,ret-1);
+    return throw_err(0,0,0,ret-1,op_nop);
   }
   srand(time(NULL));
   int_fast64_t code_base=0;
@@ -115,7 +116,7 @@ int main(int argc, char *argv[]){
     }
     if((code=aligned_malloc(code_alignment*sizeof(nightVM_uc),(reg[reg_cs]+code_base)*sizeof(nightVM_uc)))==NULL){
       free(nonrandomized_code);
-      return throw_err(0,0,0,err_failed_allocation-1);
+      return throw_err(0,0,0,err_failed_allocation-1,op_nop);
     }
     memcpy(&((unsigned char *)code)[code_base],nonrandomized_code,reg[reg_cs]);
     reg[reg_cs]+=code_base;
@@ -125,27 +126,25 @@ int main(int argc, char *argv[]){
   reg[reg_cb]=code_base;
   if((stack=aligned_malloc(_Alignof(nightVM_l),reg[reg_ssz]*sizeof(nightVM_l)))==NULL){
     free(code);
-    return throw_err(0,0,0,err_failed_allocation-1);
+    return throw_err(0,0,0,err_failed_allocation-1,op_nop);
   }
-  reg[reg_sp]=0;
   if((heap=aligned_malloc(heap_alignment*sizeof(nightVM_uc),reg[reg_hsz]*sizeof(nightVM_uc)))==NULL){
     free(code);
     free(stack);
-    return throw_err(0,0,0,err_failed_allocation-1);
+    return throw_err(0,0,0,err_failed_allocation-1,op_nop);
   }
   if((call_stack=aligned_malloc(_Alignof(nightVM_l),512*sizeof(nightVM_l)))==NULL){
     free(code);
     free(stack);
     free(call_stack);
-    return throw_err(0,0,0,err_failed_allocation-1);
+    return throw_err(0,0,0,err_failed_allocation-1,op_nop);
   }
-  reg[reg_clp]=0;
   char **opened_libs;
   if((opened_libs=malloc(65536*sizeof(char *)))==NULL){
     free(code);
     free(stack);
     free(call_stack);
-    return throw_err(0,0,0,err_failed_allocation-1);
+    return throw_err(0,0,0,err_failed_allocation-1,op_nop);
   }
   opened_libs[0]=NULL;
   size_t lib_pt=0;
@@ -155,7 +154,7 @@ int main(int argc, char *argv[]){
     free(code);
     free(stack);
     free(call_stack);
-    return throw_err(0,0,0,err_failed_allocation-1);
+    return throw_err(0,0,0,err_failed_allocation-1,op_nop);
   }
   char **sym_names;
   if((sym_names=malloc(65536*sizeof(char *)))==NULL){
@@ -163,7 +162,7 @@ int main(int argc, char *argv[]){
     free(stack);
     free(call_stack);
     free(lib_names);
-    return throw_err(0,0,0,err_failed_allocation-1);
+    return throw_err(0,0,0,err_failed_allocation-1,op_nop);
   }
   if(hcreate(65536)==0){
     free(code);
@@ -173,13 +172,16 @@ int main(int argc, char *argv[]){
     free(lib_names);
     close_opened_libs(opened_libs);
     free(opened_libs);
-    return throw_err(0,0,0,err_failed_to_create_hash_table-1);
+    return throw_err(0,0,0,err_failed_to_create_hash_table-1,op_nop);
   }
+  reg[reg_sp]=0;
   reg[reg_ia]=0;
+  reg[reg_clp]=0;
+  reg[reg_lop]=op_nop;
   unsigned int exit_status;
   int exit_code=eval(argc-args_start,&argv[args_start],stack,&code,code_alignment,&heap,heap_alignment,reg,call_stack,&exit_status,load_type_nembd,opened_libs,&lib_pt,&sym_pt,lib_names,sym_names);
   if(exit_status){
-    throw_err(reg[reg_pc],reg[reg_sp],reg[reg_ia],exit_code-1);
+    throw_err(reg[reg_pc],reg[reg_sp],reg[reg_ia],reg[reg_lop],exit_code-1);
   }
   hdestroy();
   free_sym_names(sym_names,sym_pt);
