@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE 700
 
 #include <stdio.h>
 #include <math.h>
@@ -13,15 +14,11 @@ _Static_assert(_Alignof(nightVM_l)%_Alignof(nightVM_uc)==0 && _Alignof(nightVM_l
 
 static void *aligned_malloc(size_t alignment, size_t size){
   void *return_mem;
-  if(size==0 || alignment%sizeof(void *)!=0 || ceil(log2l(alignment))!=floor(log2l(alignment))){
-    return NULL;
+  if(size%alignment!=0){
+    size+=(size+alignment-1)-((size+alignment-1)%alignment)-size;
   }
-  else if(posix_memalign(&return_mem,alignment,size)==0){
-    return return_mem;
-  }
-  else{
-    return NULL;
-  }
+  return_mem=aligned_alloc(alignment,size);
+  return return_mem;
 }
 
 static void *aligned_realloc(void *ptr, size_t alignment, size_t size, size_t prev_size){

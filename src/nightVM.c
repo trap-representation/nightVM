@@ -22,15 +22,11 @@ static int throw_err(nightVM_l reg_pc_val, nightVM_l reg_sp_val, nightVM_l reg_i
 
 static void *aligned_malloc(size_t alignment, size_t size){
   void *return_mem;
-  if(size==0 || alignment%sizeof(void *)!=0 || ceil(log2l(alignment))!=floor(log2l(alignment))){
-    return NULL;
+  if(size%alignment!=0){
+    size+=(size+alignment-1)-((size+alignment-1)%alignment)-size;
   }
-  else if(posix_memalign(&return_mem,alignment,size)==0){
-    return return_mem;
-  }
-  else{
-    return NULL;
-  }
+  return_mem=aligned_alloc(alignment,size);
+  return return_mem;
 }
 
 int main(int argc, char *argv[]){
