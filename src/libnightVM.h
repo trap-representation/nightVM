@@ -4,7 +4,9 @@
 #include "implementation.h"
 #include "opcodes.h"
 
-extern unsigned int read_file(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg);
+extern unsigned int read_esff23(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg);
+
+extern unsigned int read_esff23x(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg);
 
 extern void close_opened_libs(char **opened_libs);
 

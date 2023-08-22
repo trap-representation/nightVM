@@ -90,15 +90,19 @@ typedef char nightVM_c;
 #define SCNNVMC "hhd"
 
 #define SIZEOF_UNS sizeof(nightVM_uns)/sizeof(nightVM_uc)
+#define SIZEOF_UC 1
 #define SIZEOF_US sizeof(nightVM_us)/sizeof(nightVM_uc)
 #define SIZEOF_UI sizeof(nightVM_ui)/sizeof(nightVM_uc)
+#define SIZEOF_C 1
 #define SIZEOF_S sizeof(nightVM_s)/sizeof(nightVM_uc)
 #define SIZEOF_I sizeof(nightVM_i)/sizeof(nightVM_uc)
 #define SIZEOF_L sizeof(nightVM_l)/sizeof(nightVM_uc)
 
 #define ALIGNOF_UNS _Alignof(nightVM_uns)/sizeof(nightVM_uc)
+#define ALIGNOF_UC 1
 #define ALIGNOF_US _Alignof(nightVM_us)/sizeof(nightVM_uc)
 #define ALIGNOF_UI _Alignof(nightVM_ui)/sizeof(nightVM_uc)
+#define ALIGNOF_C 1
 #define ALIGNOF_S _Alignof(nightVM_s)/sizeof(nightVM_uc)
 #define ALIGNOF_I _Alignof(nightVM_i)/sizeof(nightVM_uc)
 #define ALIGNOF_L _Alignof(nightVM_l)/sizeof(nightVM_uc)
@@ -124,8 +128,7 @@ static char *cseq2str(nightVM_c *cseq){
 
 static nightVM_c *str2cseq(char *str){
   nightVM_c *cseq;
-  size_t len=0;
-  for(;str[len]!='\0';len++);
+  size_t len=strlen(str);
   if((cseq=malloc(sizeof(nightVM_uc)*(len+1)))==NULL){
     return NULL;
   }

@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -7,6 +8,8 @@
 #include <search.h>
 
 #include "libnightVM.h"
+
+_Static_assert(_Alignof(nightVM_l)%_Alignof(nightVM_uc)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_us)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_ui)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_c)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_s)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_i)==0,"static assert failure in " __FILE__);
 
 static void *aligned_malloc(size_t alignment, size_t size){
   void *return_mem;
@@ -33,7 +36,7 @@ static void *aligned_realloc(void *ptr, size_t alignment, size_t size, size_t pr
 
 #define READBUF_SIZE 1048576
 
-unsigned int read_file(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg){
+unsigned int read_esff23(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg){
   FILE *fp;
   if((fp=fopen(file,"rb"))==NULL){
     return err_failed_to_open_file_for_reading;
@@ -43,13 +46,106 @@ unsigned int read_file(char *file, void **code, nightVM_ui *code_alignment, nigh
     fclose(fp);
     return err_invalid_file_format;
   }
-  if(magic==0X000E3EFF){
+  if(magic==0xE3EFF){
     nightVM_ui specification_version;
     if(fread(&specification_version,sizeof(nightVM_ui),1,fp)<1){
       fclose(fp);
       return err_invalid_file_format;
     }
-    if(specification_version==0x00000023){
+    if(specification_version==0x00023){
+      nightVM_uns uns;
+      if(fread(code_alignment,sizeof(nightVM_ui),1,fp)<1){
+        fclose(fp);
+        return err_invalid_file_format;
+      }
+      if(fread(heap_alignment,sizeof(nightVM_ui),1,fp)<1){
+        fclose(fp);
+        return err_invalid_file_format;
+      }
+      if(fread(&uns,sizeof(nightVM_uns),1,fp)<1){
+        fclose(fp);
+        return err_invalid_file_format;
+      }
+      reg[reg_hsz]=uns;
+      if(fread(&uns,sizeof(nightVM_uns),1,fp)<1){
+        fclose(fp);
+        return err_invalid_file_format;
+      }
+      reg[reg_ssz]=uns;
+      if(fread(&uns,sizeof(nightVM_uns),1,fp)<1){
+        fclose(fp);
+        return err_invalid_file_format;
+      }
+      reg[reg_pc]=uns;
+      void *read_buf;
+      if((read_buf=malloc(READBUF_SIZE*sizeof(nightVM_uc)))==NULL){
+        fclose(fp);
+        return err_failed_allocation;
+      }
+      size_t read;
+      reg[reg_cs]=0;
+      *code=NULL;
+      while((read=fread(read_buf,sizeof(nightVM_uc),READBUF_SIZE,fp))){
+        if(ferror(fp)){
+          free(read_buf);
+          free(*code);
+          fclose(fp);
+          return err_failed_to_read_from_file;
+        }
+        if((*code=aligned_realloc(*code,*code_alignment,(reg[reg_cs]+read)*sizeof(nightVM_uc),reg[reg_cs]))==NULL){
+          return err_failed_allocation;
+        }
+        memcpy(&((nightVM_c *)*code)[reg[reg_cs]],read_buf,read*sizeof(nightVM_uc));
+        reg[reg_cs]+=read;
+      }
+      if(ferror(fp)){
+        free(read_buf);
+        free(*code);
+        fclose(fp);
+        return err_failed_to_read_from_file;
+      }
+      free(read_buf);
+      fclose(fp);
+    }
+    else{
+      fclose(fp);
+      return err_invalid_specification_version;
+    }
+  }
+  else{
+    fclose(fp);
+    return err_invalid_magic;
+  }
+  return 0;
+}
+
+unsigned int read_esff23x(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg){
+  FILE *fp;
+  if((fp=fopen(file,"rb"))==NULL){
+    return err_failed_to_open_file_for_reading;
+  }
+  nightVM_c bread;
+  while(fread(&bread,sizeof(nightVM_uc),1,fp)){
+    if(bread==0){
+      break;
+    }
+  }
+  if(ferror(fp)){
+    fclose(fp);
+    return err_failed_to_read_from_file;
+  }
+  nightVM_ui magic;
+  if(fread(&magic,sizeof(nightVM_ui),1,fp)<1){
+    fclose(fp);
+    return err_invalid_file_format;
+  }
+  if(magic==0xE3EF6){
+    nightVM_ui specification_version;
+    if(fread(&specification_version,sizeof(nightVM_ui),1,fp)<1){
+      fclose(fp);
+      return err_invalid_file_format;
+    }
+    if(specification_version==0x00023){
       nightVM_uns uns;
       if(fread(code_alignment,sizeof(nightVM_ui),1,fp)<1){
         fclose(fp);
