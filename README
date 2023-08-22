@@ -6,6 +6,6 @@ Check ./src/ for the source of nightVM. It is assumed that, during translation, 
 # include "q-char-sequence" new-line
 searches for the named source file the way it is defined in SUSv4-2018 4.13 (Pathname resolution).
 
-NightVM does not exactly conform to the ISO/IEC 2899:2011 standard. Even though most of the code is conforming, the behavior of some constructs depend on guarantees provided by SUSv4-2018.
+NightVM does not exactly conform to the ISO/IEC 2899:2011 standard. Even though most of it is conforming, the behavior of some constructs depend on guarantees provided by SUSv4-2018. It, however, does indeed conform to XSI, but it might not exactly be strictly conforming, because chances are, certain implementation limits have been exceeded (though I have not verified that yet).
 
 To get nightVM working, just translate ./src/libnightVM.c and ./src/nightVM.c, and link them.
