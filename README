@@ -1,5 +1,5 @@
 +--------------------------------+
-| Installation guide for nightVM |
+| Translation guide for nightVM |
 +--------------------------------+
 
 Check ./src/ for the source of nightVM. It is assumed that, during translation, a preprocessing directive of the form
@@ -9,3 +9,9 @@ searches for the named source file the way it is defined in SUSv4-2018 4.13 (Pat
 NightVM does not exactly conform to the ISO/IEC 2899:2011 standard. Even though most of it is conforming, the behavior of some constructs depend on guarantees provided by SUSv4-2018. It, however, does indeed conform to XSI, but it might not exactly be strictly conforming, because chances are, certain implementation limits have been exceeded (though I have not verified that yet).
 
 To get nightVM working, just translate ./src/libnightVM.c and ./src/nightVM.c, and link them.
+
++----------------------------+
+| Translating the easier way |
++----------------------------+
+
+If you're using a SUSv4-2018 compliant system and are fine with nightVM being put in /usr/local/bin/, you can check out the TRANSLATE_DEF file for instructions.
