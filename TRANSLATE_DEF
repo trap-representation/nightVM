@@ -1,0 +1,9 @@
+Set the current working directory to ./src/, and invoke the command
+
+[path_to_clang_gcc_or_similar] ./nightVM.c ./libnightVM.c -o /usr/local/bin/nightVM -Wall -Wextra -Wno-unused -std=c11 -ldl -lm
+
+To check if nightVM is present in /usr/local/bin/, you can invoke
+
+/usr/local/bin/nightVM --about
+
+which should display some information about nightVM.
