@@ -14,4 +14,4 @@ To get nightVM working, just translate ./src/libnightVM.c and ./src/nightVM.c, a
 | Translating the easier way |
 +----------------------------+
 
-If you're using a SUSv4-2018 compliant system and are fine with nightVM being put in /usr/local/bin/, you can check out the TRANSLATE_DEF file for instructions.
+If you're using a SUSv4-2018 compliant system and are fine with toc and the implementation of the standard library being put in /usr/local/bin/ and /usr/local/lib/ respectively, you can check out the TRANSLATE_DEF file for instructions. The instructions are guaranteed to work for clang 14.0.0 and gcc 11.4.0; however, for other implementations, the commands may or may not work the way they're meant to, depending on how certain arugments are parsed/interpreted.
