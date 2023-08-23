@@ -1,6 +1,6 @@
-+--------------------------------+
++-------------------------------+
 | Translation guide for nightVM |
-+--------------------------------+
++-------------------------------+
 
 Check ./src/ for the source of nightVM. It is assumed that, during translation, a preprocessing directive of the form
 # include "q-char-sequence" new-line
