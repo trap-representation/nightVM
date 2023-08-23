@@ -10,7 +10,7 @@
 
 #include "libnightVM.h"
 
-_Static_assert(_Alignof(nightVM_l)%_Alignof(nightVM_uc)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_us)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_ui)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_c)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_s)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_i)==0,"static assert failure in " __FILE__);
+_Static_assert(_Alignof(nightVM_l)%_Alignof(nightVM_us)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_ui)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_s)==0 && _Alignof(nightVM_l)%_Alignof(nightVM_i)==0,"static assert failure in " __FILE__);
 
 static void *aligned_malloc(size_t alignment, size_t size){
   void *return_mem;
