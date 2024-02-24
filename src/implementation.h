@@ -1,37 +1,51 @@
 #ifndef NVM_IMPLEMENTATION_H
 #define NVM_IMPLEMENTATION_H
 
-#define reg_pc 0
-#define reg_sp 1
-#define reg_cs 2
-#define reg_hsz 3
-#define reg_ssz 4
-#define reg_cb 5
-#define reg_ia 6
-#define reg_clp 7
-#define reg_lop 8
-#define reg_gpr0 9
+enum regs {
+	REG_PC,
+	REG_SP,
+	REG_CS,
+	REG_HSZ,
+	REG_SSZ,
+	REG_CB,
+	REG_IA,
+	REG_CLP,
+	REG_LOP,
+	REG_GPR0,
+	REG_GPR1,
+	REG_GPR2,
+	REG_GPR3,
+	REG_GPR4,
+	REG_GPR5,
+	REG_GPR6,
+	REG_GPR7
+};
 
-#define load_type_nembd 0
-#define load_type_embd 1
+enum load_type {
+	LT_NEMBED,
+	LT_EMBED
+};
 
 #define MAX_CODE_BASE 0x400000
 #define MAX_STACK_BASE 0x400000
 
-#define err_panic 1
-#define err_open 2
-#define err_invoke 3
-#define err_illegal_instruction 4
-#define err_trap 5
-#define err_failed_allocation 6
-#define err_failed_to_open_file_for_reading 7
-#define err_failed_to_read_from_file 8
-#define err_invalid_file_format 9
-#define err_invalid_magic 10
-#define err_invalid_specification_version 11
-#define err_failed_to_create_hash_table 12
-#define err_hash_table_enter 13
-#define err_other 14
+enum error {
+	ERR_SUCCESS,
+	ERR_PANIC,
+	ERR_OPEN,
+	ERR_INVOKE,
+	ERR_ILLEGAL_INSTRUCTION,
+	ERR_TRAP,
+	ERR_FAILED_ALLOCATION,
+	ERR_FAILED_TO_OPEN_FILE_FOR_READING,
+	ERR_FAILED_TO_READ_FROM_FILE,
+	ERR_INVALID_FILE_FORMAT,
+	ERR_INVALID_MAGIC,
+	ERR_INVALID_SPECIFICATION_VERSION,
+	ERR_FAILED_TO_CREATE_HASH_TABLE,
+	ERR_HASH_TABLE_ENTER,
+	ERR_OTHER
+};
 
 typedef unsigned long nightVM_uns;
 typedef long nightVM_l;
@@ -108,79 +122,96 @@ typedef char nightVM_c;
 #define ALIGNOF_L _Alignof(nightVM_l)/sizeof(nightVM_uc)
 
 static size_t cseqlen(nightVM_c *cseq){
-  size_t len=0;
-  for(;cseq[len]!=0;len++);
-  return len;
+	size_t len = 0;
+
+	for(; cseq[len] != 0; len++);
+
+	return len;
 }
 
 static char *cseq2str(nightVM_c *cseq){
-  char *str;
-  size_t len=cseqlen(cseq);
-  if((str=malloc(len+1))==NULL){
-    return NULL;
-  }
-  for(size_t i=0;i<len;i++){
-    str[i]=cseq[i];
-  }
-  str[len]='\0';
-  return str;
+	size_t len = cseqlen(cseq);
+
+	char *str;
+	if((str = malloc(len + 1)) == NULL){
+		return NULL;
+	}
+
+	for(size_t i = 0; i < len; i++){
+		str[i] = cseq[i];
+	}
+
+	str[len] = '\0';
+
+	return str;
 }
 
 static nightVM_c *str2cseq(char *str){
-  nightVM_c *cseq;
-  size_t len=strlen(str);
-  if((cseq=malloc(sizeof(nightVM_uc)*(len+1)))==NULL){
-    return NULL;
-  }
-  for(size_t i=0;i<len;i++){
-    cseq[i]=str[i];
-  }
-  cseq[len]=0;
-  return cseq;
+	size_t len = strlen(str);
+
+	nightVM_c *cseq;
+	if((cseq = malloc(sizeof(nightVM_uc) * (len + 1))) == NULL){
+		return NULL;
+	}
+
+	for(size_t i = 0; i < len; i++){
+		cseq[i] = str[i];
+	}
+
+	cseq[len]=0;
+
+	return cseq;
 }
 
 static nightVM_c *cseqcpystr(nightVM_c *cseq, char *str, size_t size){
-  for(size_t i=0;i<size && str[i]!='\0';i++){
-    cseq[i]=str[i];
-    cseq[i+1]=0;
-  }
-  return cseq;
+	for(size_t i = 0;i < size && str[i] != '\0'; i++){
+		cseq[i] = str[i];
+		cseq[i + 1] = 0;
+	}
+
+	return cseq;
 }
 
 static char *strcpycseq(char *str, nightVM_c *cseq, size_t size){
-  for(size_t i=0;i<size && cseq[i]!='\0';i++){
-    str[i]=cseq[i];
-    str[i+1]=0;
-  }
-  return str;
+	for(size_t i = 0;i < size && cseq[i] != '\0'; i++){
+		str[i] = cseq[i];
+		str[i + 1] = 0;
+	}
+
+	return str;
 }
 
 static nightVM_c *cseqcpycseq(nightVM_c *cseq1, nightVM_c *cseq2, size_t size){
-  for(size_t i=0;i<size && cseq2[i]!=0;i++){
-    cseq1[i]=cseq2[i];
-    cseq1[i+1]=0;
-  }
-  return cseq1;
+	for(size_t i = 0;i < size && cseq2[i] != 0; i++){
+		cseq1[i] = cseq2[i];
+		cseq1[i + 1] = 0;
+	}
+
+	return cseq1;
 }
 
 static int cseqcmpstr(nightVM_c *cseq, char *str){
-  size_t lenc=cseqlen(cseq);
-  for(size_t i=0;i<=lenc;i++){
-    if(cseq[i]!=str[i]){
-      return cseq[i]-str[i];
-    }
-  }
-  return 0;
+	size_t lenc = cseqlen(cseq);
+
+	for(size_t i = 0; i <= lenc; i++){
+		if(cseq[i] != str[i]){
+			return cseq[i] - str[i];
+		}
+	}
+
+	return 0;
 }
 
 static int cseqcmpcseq(nightVM_c *cseq1, nightVM_c *cseq2){
-  size_t lenc1=cseqlen(cseq1);
-  for(size_t i=0;i<=lenc1;i++){
-    if(cseq1[i]!=cseq2[i]){
-      return cseq1[i]-cseq2[i];
-    }
-  }
-  return 0;
+	size_t lenc1 = cseqlen(cseq1);
+
+	for(size_t i = 0; i <= lenc1; i++){
+		if(cseq1[i] != cseq2[i]){
+			return cseq1[i] - cseq2[i];
+		}
+	}
+
+	return 0;
 }
 
 #endif
