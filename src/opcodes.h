@@ -212,19 +212,21 @@
 #define OP_RCLZ 206
 #define OP_RCLNZ 207
 #define OP_RCBACK 208
+#define OP_PUT 209
 
 /* extended instruction set */
 
-#define OP_OPEN 209
-#define OP_INVOKE 210
-#define OP_TRAP 211
-#define OP_PUSHN1 212
-#define OP_PUSH0 213
-#define OP_PUSH1 214
-#define OP_PUSH2 215
-#define OP_PUSH3 216
-#define OP_PUSH4 217
-#define OP_PUSH5 218
-#define OP_PUSH7 219
+#define OP_OPEN 210
+#define OP_INVOKE 211
+#define OP_TRAP 212
+#define OP_PUSHN1 213
+#define OP_PUSH0 214
+#define OP_PUSH1 215
+#define OP_PUSH2 216
+#define OP_PUSH3 217
+#define OP_PUSH4 218
+#define OP_PUSH5 219
+#define OP_PUSH7 220
+#define OP_DBPRINT 221
 
 #endif
