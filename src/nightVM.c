@@ -249,10 +249,10 @@ int main(int argc, char *argv[]) {
     return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_TO_CREATE_HASH_TABLE - 1);
   }
 
-  reg[REG_SP]=0;
-  reg[REG_IA]=0;
-  reg[REG_CLP]=0;
-  reg[REG_LOP]=OP_NOP;
+  reg[REG_SP] = 0;
+  reg[REG_IA] = 0;
+  reg[REG_CLP] = 0;
+  reg[REG_LOP] = OP_NOP;
 
   unsigned int exit_status;
 

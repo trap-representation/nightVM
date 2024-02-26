@@ -316,6 +316,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     }
 
     opcode = code_uc[reg[REG_PC]];
+
+    if (reg[REG_LOP] == OP_RBS && opcode != OP_RBE) {
+      continue;
+    }
+
     reg[REG_LOP] = opcode;
 
     switch(opcode) {
