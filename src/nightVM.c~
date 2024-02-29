@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--credits") == 0) {
       printf("\
-    Copyright (C) 2023-2024  Somdipto Chakraborty\n\n\
+    Copyright (C) 2023  Somdipto Chakraborty\n\n\
 \
     This program is free software: you can redistribute it and/or modify\n\
     it under the terms of the GNU General Public License as published by\n\
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
     else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--about") == 0) {
       printf("\
     NightVM is an implementation of YSM.\n\
-    This program is licensed under GPLv3 Copyright (C) 2023-2024 Somdipto Chakraborty.\n");
+    This program is licensed under GPLv3 Copyright (C) 2023 Somdipto Chakraborty.\n");
 
       return 0;
     }
