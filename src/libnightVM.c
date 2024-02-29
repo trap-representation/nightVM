@@ -10,7 +10,7 @@
 
 #include "libnightVM.h"
 
-_Static_assert(_Alignof(nightVM_l) % _Alignof(nightVM_us) == 0 && _Alignof(nightVM_l) % _Alignof(nightVM_ui) == 0 && _Alignof(nightVM_l) % _Alignof(nightVM_s) == 0 && _Alignof(nightVM_l) % _Alignof(nightVM_i) == 0, "static assert failure in " __FILE__);
+_Static_assert(_Alignof(ysm_l) % _Alignof(ysm_us) == 0 && _Alignof(ysm_l) % _Alignof(ysm_ui) == 0 && _Alignof(ysm_l) % _Alignof(ysm_s) == 0 && _Alignof(ysm_l) % _Alignof(ysm_i) == 0, "static assert failure in " __FILE__);
 
 static void *aligned_malloc(size_t alignment, size_t size) {
   if (size % alignment != 0) {
@@ -33,57 +33,57 @@ static void *aligned_realloc(void *ptr, size_t alignment, size_t size, size_t pr
   return new_mem;
 }
 
-enum error read_esff23(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg) {
+enum error read_esff23(char *file, void **code, ysm_ui *code_alignment, ysm_ui *heap_alignment, ysm_l *reg) {
   FILE *fp;
   if ((fp = fopen(file, "rb")) == NULL) {
     return ERR_FAILED_TO_OPEN_FILE_FOR_READING;
   }
 
-  nightVM_ui magic;
-  if (fread(&magic, sizeof(nightVM_ui), 1, fp) < 1) {
+  ysm_ui magic;
+  if (fread(&magic, sizeof(ysm_ui), 1, fp) < 1) {
     fclose(fp);
     return ERR_INVALID_FILE_FORMAT;
   }
 
   if (magic == 0xE3EFF) {
-    nightVM_ui specification_version;
-    if (fread(&specification_version, sizeof(nightVM_ui), 1, fp) < 1) {
+    ysm_ui specification_version;
+    if (fread(&specification_version, sizeof(ysm_ui), 1, fp) < 1) {
       fclose(fp);
       return ERR_INVALID_FILE_FORMAT;
     }
 
     if (specification_version == 0x00023) {
-      nightVM_uns uns;
-      if (fread(code_alignment, sizeof(nightVM_ui), 1, fp) < 1) {
+      nightvm_uns uns;
+      if (fread(code_alignment, sizeof(ysm_ui), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
 
-      if (fread(heap_alignment, sizeof(nightVM_ui), 1, fp) < 1) {
+      if (fread(heap_alignment, sizeof(ysm_ui), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
 
-      if (fread(&uns, sizeof(nightVM_uns), 1, fp) < 1) {
+      if (fread(&uns, sizeof(nightvm_uns), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
       reg[REG_HSZ] = uns;
 
-      if (fread(&uns, sizeof(nightVM_uns), 1, fp) < 1) {
+      if (fread(&uns, sizeof(nightvm_uns), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
       reg[REG_SSZ] = uns;
 
-      if (fread(&uns, sizeof(nightVM_uns), 1, fp) < 1) {
+      if (fread(&uns, sizeof(nightvm_uns), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
       reg[REG_PC] = uns;
 
       void *read_buf;
-      if ((read_buf = malloc(READBUF_SIZE * sizeof(nightVM_uc))) == NULL) {
+      if ((read_buf = malloc(READBUF_SIZE * sizeof(ysm_uc))) == NULL) {
 	fclose(fp);
 	return ERR_FAILED_ALLOCATION;
       }
@@ -92,7 +92,7 @@ enum error read_esff23(char *file, void **code, nightVM_ui *code_alignment, nigh
       *code = NULL;
 
       size_t read;
-      while ((read = fread(read_buf, sizeof(nightVM_uc), READBUF_SIZE, fp))) {
+      while ((read = fread(read_buf, sizeof(ysm_uc), READBUF_SIZE, fp))) {
 	if (ferror(fp)) {
 	  free(read_buf);
 	  free(*code);
@@ -100,11 +100,11 @@ enum error read_esff23(char *file, void **code, nightVM_ui *code_alignment, nigh
 	  return ERR_FAILED_TO_READ_FROM_FILE;
 	}
 
-	if ((*code = aligned_realloc(*code, *code_alignment, (reg[REG_CS] + read) * sizeof(nightVM_uc), reg[REG_CS])) == NULL) {
+	if ((*code = aligned_realloc(*code, *code_alignment, (reg[REG_CS] + read) * sizeof(ysm_uc), reg[REG_CS])) == NULL) {
 	  return ERR_FAILED_ALLOCATION;
 	}
 
-	memcpy(&((nightVM_c *) *code)[reg[REG_CS]], read_buf, read * sizeof(nightVM_uc));
+	memcpy(&((ysm_c *) *code)[reg[REG_CS]], read_buf, read * sizeof(ysm_uc));
 	reg[REG_CS] += read;
       }
 
@@ -131,14 +131,14 @@ enum error read_esff23(char *file, void **code, nightVM_ui *code_alignment, nigh
   return ERR_SUCCESS;
 }
 
-enum error read_esff23x(char *file, void **code, nightVM_ui *code_alignment, nightVM_ui *heap_alignment, nightVM_l *reg) {
+enum error read_esff23x(char *file, void **code, ysm_ui *code_alignment, ysm_ui *heap_alignment, ysm_l *reg) {
   FILE *fp;
   if ((fp = fopen(file, "rb")) == NULL) {
     return ERR_FAILED_TO_OPEN_FILE_FOR_READING;
   }
 
-  nightVM_c bread;
-  while (fread(&bread, sizeof(nightVM_uc), 1, fp)) {
+  ysm_c bread;
+  while (fread(&bread, sizeof(ysm_uc), 1, fp)) {
     if (bread == 0) {
       break;
     }
@@ -149,51 +149,51 @@ enum error read_esff23x(char *file, void **code, nightVM_ui *code_alignment, nig
     return ERR_FAILED_TO_READ_FROM_FILE;
   }
 
-  nightVM_ui magic;
-  if (fread(&magic, sizeof(nightVM_ui), 1, fp) < 1) {
+  ysm_ui magic;
+  if (fread(&magic, sizeof(ysm_ui), 1, fp) < 1) {
     fclose(fp);
     return ERR_INVALID_FILE_FORMAT;
   }
 
   if (magic == 0xE3EF6) {
-    nightVM_ui specification_version;
-    if (fread(&specification_version, sizeof(nightVM_ui), 1, fp) < 1) {
+    ysm_ui specification_version;
+    if (fread(&specification_version, sizeof(ysm_ui), 1, fp) < 1) {
       fclose(fp);
       return ERR_INVALID_FILE_FORMAT;
     }
 
     if (specification_version == 0x00023) {
-      nightVM_uns uns;
-      if (fread(code_alignment, sizeof(nightVM_ui), 1, fp) < 1) {
+      nightvm_uns uns;
+      if (fread(code_alignment, sizeof(ysm_ui), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
 
-      if (fread(heap_alignment, sizeof(nightVM_ui), 1, fp) < 1) {
+      if (fread(heap_alignment, sizeof(ysm_ui), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
 
-      if (fread(&uns, sizeof(nightVM_uns), 1, fp) < 1) {
+      if (fread(&uns, sizeof(nightvm_uns), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
       reg[REG_HSZ] = uns;
 
-      if (fread(&uns, sizeof(nightVM_uns), 1, fp) < 1) {
+      if (fread(&uns, sizeof(nightvm_uns), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
       reg[REG_SSZ] = uns;
 
-      if (fread(&uns, sizeof(nightVM_uns), 1, fp) < 1) {
+      if (fread(&uns, sizeof(nightvm_uns), 1, fp) < 1) {
 	fclose(fp);
 	return ERR_INVALID_FILE_FORMAT;
       }
       reg[REG_PC] = uns;
 
       void *read_buf;
-      if ((read_buf = malloc(READBUF_SIZE*sizeof(nightVM_uc))) == NULL) {
+      if ((read_buf = malloc(READBUF_SIZE*sizeof(ysm_uc))) == NULL) {
 	fclose(fp);
 	return ERR_FAILED_ALLOCATION;
       }
@@ -202,7 +202,7 @@ enum error read_esff23x(char *file, void **code, nightVM_ui *code_alignment, nig
       *code = NULL;
 
       size_t read;
-      while ((read = fread(read_buf, sizeof(nightVM_uc), READBUF_SIZE, fp))) {
+      while ((read = fread(read_buf, sizeof(ysm_uc), READBUF_SIZE, fp))) {
 	if (ferror(fp)) {
 	  free(read_buf);
 	  free(*code);
@@ -210,11 +210,11 @@ enum error read_esff23x(char *file, void **code, nightVM_ui *code_alignment, nig
 	  return ERR_FAILED_TO_READ_FROM_FILE;
 	}
 
-	if ((*code = aligned_realloc(*code, *code_alignment, (reg[REG_CS] + read) * sizeof(nightVM_uc), reg[REG_CS])) == NULL) {
+	if ((*code = aligned_realloc(*code, *code_alignment, (reg[REG_CS] + read) * sizeof(ysm_uc), reg[REG_CS])) == NULL) {
 	  return ERR_FAILED_ALLOCATION;
 	}
 
-	memcpy(&((nightVM_c *) *code)[reg[REG_CS]], read_buf, read * sizeof(nightVM_uc));
+	memcpy(&((ysm_c *) *code)[reg[REG_CS]], read_buf, read * sizeof(ysm_uc));
 	reg[REG_CS] += read;
       }
 
@@ -267,40 +267,40 @@ void free_sym_names(char **sym_names, size_t sym_size) {
   }
 }
 
-enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l *reg, nightVM_l *call_stack, unsigned int *exit_status, enum load_type ltype, char **opened_libs, size_t *lib_pt, size_t *sym_pt, char **lib_names, char **sym_names) {
+enum error eval(int argc, char **argv, ysm_l *stack, void **code, ysm_ui code_align, void **heap, ysm_ui heap_align, ysm_l *reg, ysm_l *call_stack, unsigned int *exit_status, enum load_type ltype, char **opened_libs, size_t *lib_pt, size_t *sym_pt, char **lib_names, char **sym_names) {
   *exit_status = 0;
-  void (*symbol)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l ssz, nightVM_l *hsz, nightVM_l *sp, nightVM_l *cs, nightVM_l pc, nightVM_l lop, nightVM_l *call_stack, nightVM_l clp, nightVM_l *gpr);
+  void (*symbol)(int argc, char **argv, ysm_l *stack, void **code, ysm_ui code_align, void **heap, ysm_ui heap_align, ysm_l ssz, ysm_l *hsz, ysm_l *sp, ysm_l *cs, ysm_l pc, ysm_l lop, ysm_l *call_stack, ysm_l clp, ysm_l *gpr);
 
   /* initialization */
 
-  nightVM_uc *code_uc = *code;
-  nightVM_us *code_us = *code;
-  nightVM_ui *code_ui = *code;
-  nightVM_c *code_c = *code;
-  nightVM_s *code_s = *code;
-  nightVM_i *code_i = *code;
-  nightVM_l *code_l = *code;
-  nightVM_uc *heap_uc = *heap;
-  nightVM_us *heap_us = *heap;
-  nightVM_ui *heap_ui = *heap;
-  nightVM_c *heap_c = *heap;
-  nightVM_s *heap_s = *heap;
-  nightVM_i *heap_i = *heap;
-  nightVM_l *heap_l = *heap;
+  ysm_uc *code_uc = *code;
+  ysm_us *code_us = *code;
+  ysm_ui *code_ui = *code;
+  ysm_c *code_c = *code;
+  ysm_s *code_s = *code;
+  ysm_i *code_i = *code;
+  ysm_l *code_l = *code;
+  ysm_uc *heap_uc = *heap;
+  ysm_us *heap_us = *heap;
+  ysm_ui *heap_ui = *heap;
+  ysm_c *heap_c = *heap;
+  ysm_s *heap_s = *heap;
+  ysm_i *heap_i = *heap;
+  ysm_l *heap_l = *heap;
 
   /* --- */
 
   /* non-necessary for temporary storage */
 
-  nightVM_uc uc, uc_1;
-  nightVM_us us, us_1;
-  nightVM_ui ui, ui_1;
-  nightVM_uns uns, uns_1;
-  nightVM_c c, c_1;
-  nightVM_s s, s_1;
-  nightVM_i i, i_1;
-  nightVM_l l, l_1;
-  nightVM_uc opcode;
+  ysm_uc uc, uc_1;
+  ysm_us us, us_1;
+  ysm_ui ui, ui_1;
+  nightvm_uns uns, uns_1;
+  ysm_c c, c_1;
+  ysm_s s, s_1;
+  ysm_i i, i_1;
+  ysm_l l, l_1;
+  ysm_uc opcode;
   char resolved_name[PATH_MAX];
   char *str;
   ENTRY hash_table_entry;
@@ -362,7 +362,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUSHUS:
       reg[REG_PC]++;
 
-      memcpy(&us, &code_uc[reg[REG_PC]], sizeof(nightVM_us));
+      memcpy(&us, &code_uc[reg[REG_PC]], sizeof(ysm_us));
       stack[reg[REG_SP]] = us;
       reg[REG_SP]++;
 
@@ -372,7 +372,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUSHUI:
       reg[REG_PC]++;
 
-      memcpy(&ui, &code_uc[reg[REG_PC]], sizeof(nightVM_ui));
+      memcpy(&ui, &code_uc[reg[REG_PC]], sizeof(ysm_ui));
       stack[reg[REG_SP]] = ui;
       reg[REG_SP]++;
 
@@ -382,7 +382,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUSHC:
       reg[REG_PC]++;
 
-      stack[reg[REG_SP]] = ((nightVM_c *) *code)[reg[REG_PC]];
+      stack[reg[REG_SP]] = ((ysm_c *) *code)[reg[REG_PC]];
       reg[REG_SP]++;
 
       reg[REG_PC]++;
@@ -391,7 +391,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUSHS:
       reg[REG_PC]++;
 
-      memcpy(&s, &code_uc[reg[REG_PC]], sizeof(nightVM_s));
+      memcpy(&s, &code_uc[reg[REG_PC]], sizeof(ysm_s));
       stack[reg[REG_SP]] = s;
       reg[REG_SP]++;
 
@@ -401,7 +401,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUSHI:
       reg[REG_PC]++;
 
-      memcpy(&i, &code_uc[reg[REG_PC]], sizeof(nightVM_i));
+      memcpy(&i, &code_uc[reg[REG_PC]], sizeof(ysm_i));
       stack[reg[REG_SP]] = i;
       reg[REG_SP]++;
 
@@ -411,7 +411,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUSHL:
       reg[REG_PC]++;
 
-      memcpy(&stack[reg[REG_SP]], &code_uc[reg[REG_PC]], sizeof(nightVM_l));
+      memcpy(&stack[reg[REG_SP]], &code_uc[reg[REG_PC]], sizeof(ysm_l));
       reg[REG_SP]++;
 
       reg[REG_PC] += SIZEOF_L;
@@ -502,42 +502,42 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_ADDUC:
-      stack[reg[REG_SP] - 2] = (nightVM_uc) (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) + ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_uc) (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) + ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ADDUS:
-      stack[reg[REG_SP] - 2] = (nightVM_us) (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) + ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_us) (((ysm_us) stack[reg[REG_SP] - 1] + 0u) + ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ADDUI:
-      stack[reg[REG_SP] - 2] = (nightVM_ui) (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) + ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_ui) (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) + ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ADDC:
-      stack[reg[REG_SP] - 2] = (nightVM_c) ((nightVM_c) stack[reg[REG_SP] - 1] + (nightVM_c) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_c) ((ysm_c) stack[reg[REG_SP] - 1] + (ysm_c) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ADDS:
-      stack[reg[REG_SP] - 2] = (nightVM_s) ((nightVM_s) stack[reg[REG_SP] - 1] + (nightVM_s) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_s) ((ysm_s) stack[reg[REG_SP] - 1] + (ysm_s) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ADDI:
-      stack[reg[REG_SP] - 2] = (nightVM_i) ((nightVM_i) stack[reg[REG_SP] - 1] + (nightVM_i) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_i) ((ysm_i) stack[reg[REG_SP] - 1] + (ysm_i) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -551,42 +551,42 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_SUBUC:
-      stack[reg[REG_SP] - 2] = (nightVM_uc) (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) - ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_uc) (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) - ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_SUBUS:
-      stack[reg[REG_SP] - 2] = (nightVM_us) (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) - ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_us) (((ysm_us) stack[reg[REG_SP] - 1] + 0u) - ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_SUBUI:
-      stack[reg[REG_SP] - 2] = (nightVM_ui) (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) - ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_ui) (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) - ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_SUBC:
-      stack[reg[REG_SP] - 2] = (nightVM_c) ((nightVM_c) stack[reg[REG_SP] - 1] - (nightVM_c) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_c) ((ysm_c) stack[reg[REG_SP] - 1] - (ysm_c) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_SUBS:
-      stack[reg[REG_SP] - 2] = (nightVM_s) ((nightVM_s) stack[reg[REG_SP] - 1] - (nightVM_s) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_s) ((ysm_s) stack[reg[REG_SP] - 1] - (ysm_s) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_SUBI:
-      stack[reg[REG_SP] - 2] = (nightVM_i) ((nightVM_i) stack[reg[REG_SP] - 1] - (nightVM_i) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_i) ((ysm_i) stack[reg[REG_SP] - 1] - (ysm_i) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -600,42 +600,42 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_MULUC:
-      stack[reg[REG_SP] - 2] = (nightVM_uc) (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) * ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_uc) (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) * ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_MULUS:
-      stack[reg[REG_SP] - 2] = (nightVM_us) (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) * ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_us) (((ysm_us) stack[reg[REG_SP] - 1] + 0u) * ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_MULUI:
-      stack[reg[REG_SP] - 2] = (nightVM_ui) (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) * ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_ui) (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) * ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_MULC:
-      stack[reg[REG_SP] - 2] = (nightVM_c) ((nightVM_c) stack[reg[REG_SP] - 1] * (nightVM_c) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_c) ((ysm_c) stack[reg[REG_SP] - 1] * (ysm_c) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_MULS:
-      stack[reg[REG_SP] - 2] = (nightVM_s) ((nightVM_s) stack[reg[REG_SP] - 1] * (nightVM_s) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_s) ((ysm_s) stack[reg[REG_SP] - 1] * (ysm_s) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_MULI:
-      stack[reg[REG_SP] - 2] = (nightVM_i) ((nightVM_i) stack[reg[REG_SP] - 1] * (nightVM_i) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_i) ((ysm_i) stack[reg[REG_SP] - 1] * (ysm_i) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -649,42 +649,42 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_REMUC:
-      stack[reg[REG_SP] - 2] = (nightVM_uc) (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) % ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_uc) (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) % ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_REMUS:
-      stack[reg[REG_SP] - 2] = (nightVM_us) (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) % ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_us) (((ysm_us) stack[reg[REG_SP] - 1] + 0u) % ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_REMUI:
-      stack[reg[REG_SP] - 2] = (nightVM_ui) (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) % ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_ui) (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) % ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_REMC:
-      stack[reg[REG_SP] - 2] = (nightVM_c) ((nightVM_c) stack[reg[REG_SP] - 1] % (nightVM_c) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_c) ((ysm_c) stack[reg[REG_SP] - 1] % (ysm_c) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_REMS:
-      stack[reg[REG_SP] - 2] = (nightVM_s) ((nightVM_s) stack[reg[REG_SP] - 1] % (nightVM_s) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_s) ((ysm_s) stack[reg[REG_SP] - 1] % (ysm_s) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_REMI:
-      stack[reg[REG_SP] - 2] = (nightVM_i) ((nightVM_i) stack[reg[REG_SP] - 1] % (nightVM_i) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_i) ((ysm_i) stack[reg[REG_SP] - 1] % (ysm_i) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -698,42 +698,42 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_DIVUC:
-      stack[reg[REG_SP] - 2] = (nightVM_uc) (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) / ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_uc) (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) / ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_DIVUS:
-      stack[reg[REG_SP] - 2] = (nightVM_us) (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) / ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_us) (((ysm_us) stack[reg[REG_SP] - 1] + 0u) / ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_DIVUI:
-      stack[reg[REG_SP] - 2] = (nightVM_ui) (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) / ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (ysm_ui) (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) / ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_DIVC:
-      stack[reg[REG_SP] - 2] = (nightVM_c) ((nightVM_c) stack[reg[REG_SP] - 1] / (nightVM_c) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_c) ((ysm_c) stack[reg[REG_SP] - 1] / (ysm_c) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_DIVS:
-      stack[reg[REG_SP] - 2] = (nightVM_s) ((nightVM_s) stack[reg[REG_SP] - 1] / (nightVM_s) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_s) ((ysm_s) stack[reg[REG_SP] - 1] / (ysm_s) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_DIVI:
-      stack[reg[REG_SP] - 2] = (nightVM_i) ((nightVM_i) stack[reg[REG_SP] - 1] / (nightVM_i) stack[reg[REG_SP] - 2]);
+      stack[reg[REG_SP] - 2] = (ysm_i) ((ysm_i) stack[reg[REG_SP] - 1] / (ysm_i) stack[reg[REG_SP] - 2]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -747,21 +747,21 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LSHUC:
-      stack[reg[REG_SP] - 2] = (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) << ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u)) & 0xFF;
+      stack[reg[REG_SP] - 2] = (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) << ((ysm_uc) stack[reg[REG_SP] - 2] + 0u)) & 0xFF;
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_LSHUS:
-      stack[reg[REG_SP] - 2] = (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) << ((nightVM_us) stack[reg[REG_SP] - 2] + 0u)) & 0xFFFF;
+      stack[reg[REG_SP] - 2] = (((ysm_us) stack[reg[REG_SP] - 1] + 0u) << ((ysm_us) stack[reg[REG_SP] - 2] + 0u)) & 0xFFFF;
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_LSHUI:
-      stack[reg[REG_SP] - 2] = (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) << ((nightVM_ui)stack[reg[REG_SP] - 2] + 0u)) & 0xFFFFFF;
+      stack[reg[REG_SP] - 2] = (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) << ((ysm_ui)stack[reg[REG_SP] - 2] + 0u)) & 0xFFFFFF;
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -771,11 +771,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       c = stack[reg[REG_SP] - 1];
       c_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uc, &c, sizeof(nightVM_uc));
-      memcpy(&uc_1, &c_1, sizeof(nightVM_uc));
+      memcpy(&uc, &c, sizeof(ysm_uc));
+      memcpy(&uc_1, &c_1, sizeof(ysm_uc));
 
       uc = ((uc + 0u) << (uc_1 + 0u)) & 0xFF;
-      memcpy(&c, &uc, sizeof(nightVM_c));
+      memcpy(&c, &uc, sizeof(ysm_c));
       stack[reg[REG_SP] - 2] = c;
       reg[REG_SP]--;
 
@@ -786,11 +786,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       s = stack[reg[REG_SP] - 1];
       s_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&us, &s, sizeof(nightVM_us));
-      memcpy(&us_1, &s_1, sizeof(nightVM_us));
+      memcpy(&us, &s, sizeof(ysm_us));
+      memcpy(&us_1, &s_1, sizeof(ysm_us));
 
       us = ((us + 0u) << (us_1 + 0u)) & 0xFFFF;
-      memcpy(&s, &us, sizeof(nightVM_s));
+      memcpy(&s, &us, sizeof(ysm_s));
       stack[reg[REG_SP] - 2] = s;
       reg[REG_SP]--;
 
@@ -801,11 +801,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       i = stack[reg[REG_SP] - 1];
       i_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&ui, &i, sizeof(nightVM_ui));
-      memcpy(&ui_1, &i_1, sizeof(nightVM_ui));
+      memcpy(&ui, &i, sizeof(ysm_ui));
+      memcpy(&ui_1, &i_1, sizeof(ysm_ui));
 
       ui = ((ui + 0u) << (ui_1 + 0u)) & 0xFFFFFF;
-      memcpy(&i, &ui, sizeof(nightVM_i));
+      memcpy(&i, &ui, sizeof(ysm_i));
       stack[reg[REG_SP] - 2] = i;
       reg[REG_SP]--;
 
@@ -816,11 +816,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       l = stack[reg[REG_SP] - 1];
       l_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uns, &l, sizeof(nightVM_uns));
-      memcpy(&uns_1, &l_1, sizeof(nightVM_uns));
+      memcpy(&uns, &l, sizeof(nightvm_uns));
+      memcpy(&uns_1, &l_1, sizeof(nightvm_uns));
 
       uns = ((uns + 0u) << (uns_1 + 0u)) & 0xFFFFFFFF;
-      memcpy(&l, &uns, sizeof(nightVM_l));
+      memcpy(&l, &uns, sizeof(ysm_l));
       stack[reg[REG_SP] - 2] = l;
       reg[REG_SP]--;
 
@@ -828,21 +828,21 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_RSHUC:
-      stack[reg[REG_SP] - 2] = ((nightVM_uc)stack[reg[REG_SP] - 1] + 0u) >> ((nightVM_uc)stack[reg[REG_SP] - 2] + 0u);
+      stack[reg[REG_SP] - 2] = ((ysm_uc)stack[reg[REG_SP] - 1] + 0u) >> ((ysm_uc)stack[reg[REG_SP] - 2] + 0u);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_RSHUS:
-      stack[reg[REG_SP] - 2] = ((nightVM_us)stack[reg[REG_SP] - 1] + 0u) >> ((nightVM_us)stack[reg[REG_SP] - 2] + 0u);
+      stack[reg[REG_SP] - 2] = ((ysm_us)stack[reg[REG_SP] - 1] + 0u) >> ((ysm_us)stack[reg[REG_SP] - 2] + 0u);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_RSHUI:
-      stack[reg[REG_SP] - 2] = (((nightVM_ui)stack[reg[REG_SP] - 1] + 0u) >> ((nightVM_ui)stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_ui)stack[reg[REG_SP] - 1] + 0u) >> ((ysm_ui)stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -852,11 +852,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       c = stack[reg[REG_SP] - 1];
       c_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uc, &c, sizeof(nightVM_uc));
-      memcpy(&uc_1, &c_1, sizeof(nightVM_uc));
+      memcpy(&uc, &c, sizeof(ysm_uc));
+      memcpy(&uc_1, &c_1, sizeof(ysm_uc));
 
       uc = (uc + 0u) >> (uc_1 + 0u);
-      memcpy(&c, &uc, sizeof(nightVM_c));
+      memcpy(&c, &uc, sizeof(ysm_c));
       stack[reg[REG_SP] - 2] = c;
       reg[REG_SP]--;
 
@@ -867,11 +867,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       s = stack[reg[REG_SP] - 1];
       s_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&us, &s, sizeof(nightVM_us));
-      memcpy(&us_1, &s_1, sizeof(nightVM_us));
+      memcpy(&us, &s, sizeof(ysm_us));
+      memcpy(&us_1, &s_1, sizeof(ysm_us));
 
       us = (us + 0u) >> (us_1 + 0u);
-      memcpy(&s, &us, sizeof(nightVM_s));
+      memcpy(&s, &us, sizeof(ysm_s));
       stack[reg[REG_SP] - 2] = s;
       reg[REG_SP]--;
 
@@ -882,11 +882,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       i = stack[reg[REG_SP] - 1];
       i_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&ui, &i, sizeof(nightVM_ui));
-      memcpy(&ui_1, &i_1, sizeof(nightVM_ui));
+      memcpy(&ui, &i, sizeof(ysm_ui));
+      memcpy(&ui_1, &i_1, sizeof(ysm_ui));
 
       ui = (ui + 0u) >> (ui_1 + 0u);
-      memcpy(&i, &ui, sizeof(nightVM_i));
+      memcpy(&i, &ui, sizeof(ysm_i));
       stack[reg[REG_SP] - 2] = i;
       reg[REG_SP]--;
 
@@ -897,11 +897,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       l = stack[reg[REG_SP] - 1];
       l_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uns, &l, sizeof(nightVM_uns));
-      memcpy(&uns_1, &l_1, sizeof(nightVM_uns));
+      memcpy(&uns, &l, sizeof(nightvm_uns));
+      memcpy(&uns_1, &l_1, sizeof(nightvm_uns));
 
       uns = (uns + 0u) >> (uns_1 + 0u);
-      memcpy(&l, &uns, sizeof(nightVM_l));
+      memcpy(&l, &uns, sizeof(ysm_l));
       stack[reg[REG_SP] - 2] = l;
       reg[REG_SP]--;
 
@@ -909,21 +909,21 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_ANDUC:
-      stack[reg[REG_SP] - 2] = (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) & ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) & ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ANDUS:
-      stack[reg[REG_SP] - 2] = (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) & ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_us) stack[reg[REG_SP] - 1] + 0u) & ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ANDUI:
-      stack[reg[REG_SP] - 2] = (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) & ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) & ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -933,11 +933,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       c = stack[reg[REG_SP] - 1];
       c_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uc, &c, sizeof(nightVM_uc));
-      memcpy(&uc_1, &c_1, sizeof(nightVM_uc));
+      memcpy(&uc, &c, sizeof(ysm_uc));
+      memcpy(&uc_1, &c_1, sizeof(ysm_uc));
 
       uc = (uc + 0u) & (uc_1 + 0u);
-      memcpy(&c, &uc, sizeof(nightVM_c));
+      memcpy(&c, &uc, sizeof(ysm_c));
       stack[reg[REG_SP] - 2] = c;
       reg[REG_SP]--;
 
@@ -948,11 +948,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       s = stack[reg[REG_SP] - 1];
       s_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&us, &s, sizeof(nightVM_us));
-      memcpy(&us_1, &s_1, sizeof(nightVM_us));
+      memcpy(&us, &s, sizeof(ysm_us));
+      memcpy(&us_1, &s_1, sizeof(ysm_us));
 
       us = (us + 0u) & (us_1 + 0u);
-      memcpy(&s, &us, sizeof(nightVM_s));
+      memcpy(&s, &us, sizeof(ysm_s));
       stack[reg[REG_SP] - 2] = s;
       reg[REG_SP]--;
 
@@ -963,11 +963,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       i = stack[reg[REG_SP] - 1];
       i_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&ui, &i, sizeof(nightVM_ui));
-      memcpy(&ui_1, &i_1, sizeof(nightVM_ui));
+      memcpy(&ui, &i, sizeof(ysm_ui));
+      memcpy(&ui_1, &i_1, sizeof(ysm_ui));
 
       ui = (ui + 0u) & (ui_1 + 0u);
-      memcpy(&i, &ui, sizeof(nightVM_i));
+      memcpy(&i, &ui, sizeof(ysm_i));
       stack[reg[REG_SP] - 2] = i;
       reg[REG_SP]--;
 
@@ -978,11 +978,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       l = stack[reg[REG_SP] - 1];
       l_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uns, &l, sizeof(nightVM_uns));
-      memcpy(&uns_1, &l_1, sizeof(nightVM_uns));
+      memcpy(&uns, &l, sizeof(nightvm_uns));
+      memcpy(&uns_1, &l_1, sizeof(nightvm_uns));
 
       uns = (uns + 0u) & (uns_1 + 0u);
-      memcpy(&l, &uns, sizeof(nightVM_l));
+      memcpy(&l, &uns, sizeof(ysm_l));
       stack[reg[REG_SP] - 2] = l;
       reg[REG_SP]--;
 
@@ -990,20 +990,20 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_ORUC:
-      stack[reg[REG_SP] - 2] = (((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) | ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_uc) stack[reg[REG_SP] - 1] + 0u) | ((ysm_uc) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_ORUS:
-      stack[reg[REG_SP] - 2] = (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) | ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_us) stack[reg[REG_SP] - 1] + 0u) | ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
     case OP_ORUI:
-      stack[reg[REG_SP] - 2] = (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) | ((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_ui) stack[reg[REG_SP] - 1] + 0u) | ((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -1013,11 +1013,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       c = stack[reg[REG_SP] - 1];
       c_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uc, &c, sizeof(nightVM_uc));
-      memcpy(&uc_1, &c_1, sizeof(nightVM_uc));
+      memcpy(&uc, &c, sizeof(ysm_uc));
+      memcpy(&uc_1, &c_1, sizeof(ysm_uc));
 
       uc = (uc + 0u) | (uc_1 + 0u);
-      memcpy(&c, &uc, sizeof(nightVM_c));
+      memcpy(&c, &uc, sizeof(ysm_c));
       stack[reg[REG_SP] - 2] = c;
       reg[REG_SP]--;
 
@@ -1028,11 +1028,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       s = stack[reg[REG_SP] - 1];
       s_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&us, &s, sizeof(nightVM_us));
-      memcpy(&us_1, &s_1, sizeof(nightVM_us));
+      memcpy(&us, &s, sizeof(ysm_us));
+      memcpy(&us_1, &s_1, sizeof(ysm_us));
 
       us = (us + 0u) | (us_1 + 0u);
-      memcpy(&s, &us, sizeof(nightVM_s));
+      memcpy(&s, &us, sizeof(ysm_s));
       stack[reg[REG_SP] - 2] = s;
       reg[REG_SP]--;
 
@@ -1043,11 +1043,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       i = stack[reg[REG_SP] - 1];
       i_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&ui, &i, sizeof(nightVM_ui));
-      memcpy(&ui_1, &i_1, sizeof(nightVM_ui));
+      memcpy(&ui, &i, sizeof(ysm_ui));
+      memcpy(&ui_1, &i_1, sizeof(ysm_ui));
 
       ui = (ui + 0u) | (ui_1 + 0u);
-      memcpy(&i, &ui, sizeof(nightVM_i));
+      memcpy(&i, &ui, sizeof(ysm_i));
       stack[reg[REG_SP] - 2] = i;
       reg[REG_SP]--;
 
@@ -1058,11 +1058,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       l = stack[reg[REG_SP] - 1];
       l_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uns, &l, sizeof(nightVM_uns));
-      memcpy(&uns_1, &l_1, sizeof(nightVM_uns));
+      memcpy(&uns, &l, sizeof(nightvm_uns));
+      memcpy(&uns_1, &l_1, sizeof(nightvm_uns));
 
       uns = (uns + 0u) | (uns_1 + 0u);
-      memcpy(&l, &uns, sizeof(nightVM_l));
+      memcpy(&l, &uns, sizeof(ysm_l));
       stack[reg[REG_SP] - 2] = l;
       reg[REG_SP]--;
 
@@ -1070,7 +1070,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_XORUC:
-      stack[reg[REG_SP] - 2] = ((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) ^ ((nightVM_uc) stack[reg[REG_SP] - 2] + 0u);
+      stack[reg[REG_SP] - 2] = ((ysm_uc) stack[reg[REG_SP] - 1] + 0u) ^ ((ysm_uc) stack[reg[REG_SP] - 2] + 0u);
 
       reg[REG_SP]--;
 
@@ -1078,14 +1078,14 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_XORUS:
-      stack[reg[REG_SP] - 2] = (((nightVM_us) stack[reg[REG_SP] - 1] + 0u) ^ ((nightVM_us) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_us) stack[reg[REG_SP] - 1] + 0u) ^ ((ysm_us) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
       break;
 
     case OP_XORUI:
-      stack[reg[REG_SP] - 2] = (((nightVM_ui) stack[reg[REG_SP] - 1] + 0u)^((nightVM_ui) stack[reg[REG_SP] - 2] + 0u));
+      stack[reg[REG_SP] - 2] = (((ysm_ui) stack[reg[REG_SP] - 1] + 0u)^((ysm_ui) stack[reg[REG_SP] - 2] + 0u));
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -1095,11 +1095,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       c = stack[reg[REG_SP] - 1];
       c_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uc, &c, sizeof(nightVM_uc));
-      memcpy(&uc_1, &c_1, sizeof(nightVM_uc));
+      memcpy(&uc, &c, sizeof(ysm_uc));
+      memcpy(&uc_1, &c_1, sizeof(ysm_uc));
 
       uc = (uc + 0u) ^ (uc_1 + 0u);
-      memcpy(&c, &uc, sizeof(nightVM_c));
+      memcpy(&c, &uc, sizeof(ysm_c));
       stack[reg[REG_SP] - 2] = c;
       reg[REG_SP]--;
 
@@ -1110,11 +1110,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       s = stack[reg[REG_SP] - 1];
       s_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&us, &s, sizeof(nightVM_us));
-      memcpy(&us_1, &s_1, sizeof(nightVM_us));
+      memcpy(&us, &s, sizeof(ysm_us));
+      memcpy(&us_1, &s_1, sizeof(ysm_us));
 
       us = (us + 0u) ^ (us_1 + 0u);
-      memcpy(&s, &us, sizeof(nightVM_s));
+      memcpy(&s, &us, sizeof(ysm_s));
       stack[reg[REG_SP] - 2] = s;
       reg[REG_SP]--;
 
@@ -1125,11 +1125,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       i = stack[reg[REG_SP] - 1];
       i_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&ui, &i, sizeof(nightVM_ui));
-      memcpy(&ui_1, &i_1, sizeof(nightVM_ui));
+      memcpy(&ui, &i, sizeof(ysm_ui));
+      memcpy(&ui_1, &i_1, sizeof(ysm_ui));
 
       ui = (ui + 0u) ^ (ui_1 + 0u);
-      memcpy(&i, &ui, sizeof(nightVM_i));
+      memcpy(&i, &ui, sizeof(ysm_i));
       stack[reg[REG_SP] - 2] = i;
       reg[REG_SP]--;
 
@@ -1140,11 +1140,11 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       l = stack[reg[REG_SP] - 1];
       l_1 = stack[reg[REG_SP] - 2];
 
-      memcpy(&uns, &l, sizeof(nightVM_uns));
-      memcpy(&uns_1, &l_1, sizeof(nightVM_uns));
+      memcpy(&uns, &l, sizeof(nightvm_uns));
+      memcpy(&uns_1, &l_1, sizeof(nightvm_uns));
 
       uns = (uns + 0u) ^ (uns_1 + 0u);
-      memcpy(&l, &uns, sizeof(nightVM_l));
+      memcpy(&l, &uns, sizeof(ysm_l));
       stack[reg[REG_SP] - 2] = l;
       reg[REG_SP]--;
 
@@ -1152,19 +1152,19 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_NOTUC:
-      stack[reg[REG_SP] - 1] = ~((nightVM_uc) stack[reg[REG_SP] - 1] + 0u) & 0xFF;
+      stack[reg[REG_SP] - 1] = ~((ysm_uc) stack[reg[REG_SP] - 1] + 0u) & 0xFF;
 
       reg[REG_PC]++;
       break;
 
     case OP_NOTUS:
-      stack[reg[REG_SP] - 1] = ~((nightVM_us) stack[reg[REG_SP] - 1] + 0u) & 0xFFFF;
+      stack[reg[REG_SP] - 1] = ~((ysm_us) stack[reg[REG_SP] - 1] + 0u) & 0xFFFF;
 
       reg[REG_PC]++;
       break;
 
     case OP_NOTUI:
-      stack[reg[REG_SP] - 1] = ~((nightVM_ui) stack[reg[REG_SP] - 1] + 0u) & 0xFFFFFF;
+      stack[reg[REG_SP] - 1] = ~((ysm_ui) stack[reg[REG_SP] - 1] + 0u) & 0xFFFFFF;
 
       reg[REG_PC]++;
       break;
@@ -1172,10 +1172,10 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_NOTC:
       c = stack[reg[REG_SP] - 1];
 
-      memcpy(&uc, &c, sizeof(nightVM_uc));
+      memcpy(&uc, &c, sizeof(ysm_uc));
       uc = ~(uc + 0u) & 0xFF;
 
-      memcpy(&c, &uc, sizeof(nightVM_c));
+      memcpy(&c, &uc, sizeof(ysm_c));
       stack[reg[REG_SP] - 1] = c;
 
       reg[REG_PC]++;
@@ -1184,10 +1184,10 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_NOTS:
       s = stack[reg[REG_SP] - 1];
 
-      memcpy(&us, &s, sizeof(nightVM_us));
+      memcpy(&us, &s, sizeof(ysm_us));
       us = ~(us + 0u) & 0xFFFF;
 
-      memcpy(&s, &us, sizeof(nightVM_s));
+      memcpy(&s, &us, sizeof(ysm_s));
       stack[reg[REG_SP] - 1] = s;
 
       reg[REG_PC]++;
@@ -1196,10 +1196,10 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_NOTI:
       i = stack[reg[REG_SP] - 1];
 
-      memcpy(&ui, &i, sizeof(nightVM_ui));
+      memcpy(&ui, &i, sizeof(ysm_ui));
       ui = ~(ui + 0u) & 0xFFFFFF;
 
-      memcpy(&i, &ui, sizeof(nightVM_i));
+      memcpy(&i, &ui, sizeof(ysm_i));
       stack[reg[REG_SP] - 1] = i;
 
       reg[REG_PC]++;
@@ -1208,10 +1208,10 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_NOTL:
       l = stack[reg[REG_SP] - 1];
 
-      memcpy(&uns, &l, sizeof(nightVM_uns));
+      memcpy(&uns, &l, sizeof(nightvm_uns));
       uns = ~(uns + 0u) & 0xFFFFFFFF;
 
-      memcpy(&l, &uns, sizeof(nightVM_l));
+      memcpy(&l, &uns, sizeof(ysm_l));
       stack[reg[REG_SP] - 1] = l;
 
       reg[REG_PC]++;
@@ -1224,7 +1224,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&uc, &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_uc));
+      memcpy(&uc, &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_uc));
       stack[reg[REG_SP] - 1] = uc;
 
       reg[REG_PC]++;
@@ -1249,7 +1249,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&us, &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_us));
+      memcpy(&us, &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_us));
       stack[reg[REG_SP] - 1] = us;
 
       reg[REG_PC]++;
@@ -1274,7 +1274,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&ui, &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_ui));
+      memcpy(&ui, &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_ui));
       stack[reg[REG_SP] - 1] = ui;
 
       reg[REG_PC]++;
@@ -1299,7 +1299,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&c, &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_c));
+      memcpy(&c, &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_c));
       stack[reg[REG_SP] - 1] = c;
 
       reg[REG_PC]++;
@@ -1324,7 +1324,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&s, &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_s));
+      memcpy(&s, &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_s));
       stack[reg[REG_SP] - 1] = s;
 
       reg[REG_PC]++;
@@ -1349,7 +1349,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&i, &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_i));
+      memcpy(&i, &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_i));
       stack[reg[REG_SP] - 1] = i;
 
       reg[REG_PC]++;
@@ -1374,7 +1374,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      memcpy(&stack[reg[REG_SP] - 1], &code_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_l));
+      memcpy(&stack[reg[REG_SP] - 1], &code_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_l));
 
       reg[REG_PC]++;
       break;
@@ -1392,7 +1392,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHUC:
-      memcpy(&uc, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_uc));
+      memcpy(&uc, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_uc));
       stack[reg[REG_SP] - 1] = uc;
 
       reg[REG_PC]++;
@@ -1405,7 +1405,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHUS:
-      memcpy(&us, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_us));
+      memcpy(&us, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_us));
       stack[reg[REG_SP] - 1] = us;
 
       reg[REG_PC]++;
@@ -1418,7 +1418,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHUI:
-      memcpy(&ui, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_ui));
+      memcpy(&ui, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_ui));
       stack[reg[REG_SP] - 1] = ui;
 
       reg[REG_PC]++;
@@ -1431,7 +1431,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHC:
-      memcpy(&c, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_c));
+      memcpy(&c, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_c));
       stack[reg[REG_SP] - 1] = c;
 
       reg[REG_PC]++;
@@ -1444,7 +1444,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHS:
-      memcpy(&s, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_s));
+      memcpy(&s, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_s));
       stack[reg[REG_SP] - 1] = s;
 
       reg[REG_PC]++;
@@ -1457,7 +1457,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHI:
-      memcpy(&i, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_i));
+      memcpy(&i, &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_i));
       stack[reg[REG_SP] - 1] = i;
 
       reg[REG_PC]++;
@@ -1470,7 +1470,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_LDHL:
-      memcpy(&stack[reg[REG_SP] - 1], &heap_uc[stack[reg[REG_SP] - 1]], sizeof(nightVM_l));
+      memcpy(&stack[reg[REG_SP] - 1], &heap_uc[stack[reg[REG_SP] - 1]], sizeof(ysm_l));
 
       reg[REG_PC]++;
       break;
@@ -1483,7 +1483,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHUC:
       uc = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &uc, sizeof(nightVM_uc));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &uc, sizeof(ysm_uc));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1498,7 +1498,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHUS:
       us = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &us, sizeof(nightVM_us));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &us, sizeof(ysm_us));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1513,7 +1513,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHUI:
       ui = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &ui, sizeof(nightVM_ui));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &ui, sizeof(ysm_ui));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1528,7 +1528,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHC:
       c = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &c, sizeof(nightVM_c));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &c, sizeof(ysm_c));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1543,7 +1543,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHS:
       s = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &s, sizeof(nightVM_s));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &s, sizeof(ysm_s));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1558,7 +1558,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHI:
       i = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &i, sizeof(nightVM_i));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &i, sizeof(ysm_i));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1573,7 +1573,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
     case OP_STHL:
       l = stack[reg[REG_SP] - 2];
-      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &l, sizeof(nightVM_l));
+      memcpy(&heap_uc[stack[reg[REG_SP] - 1]], &l, sizeof(ysm_l));
       reg[REG_SP] -= 2;
 
       reg[REG_PC]++;
@@ -1750,7 +1750,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PCOPY:
       l = stack[stack[reg[REG_SP] - 1]];
 
-      memmove(&stack[stack[reg[REG_SP] - 1]], &stack[stack[reg[REG_SP] - 1] + 1], (reg[REG_SP] - (stack[reg[REG_SP] - 1] + 1)) * sizeof(nightVM_l));
+      memmove(&stack[stack[reg[REG_SP] - 1]], &stack[stack[reg[REG_SP] - 1] + 1], (reg[REG_SP] - (stack[reg[REG_SP] - 1] + 1)) * sizeof(ysm_l));
 
       stack[reg[REG_SP] - 2] = l;
       reg[REG_SP]--;
@@ -1761,7 +1761,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
     case OP_PUT:
       l = stack[reg[REG_SP] - 2];
 
-      memmove(&stack[stack[reg[REG_SP] - 1] + 1], &stack[stack[reg[REG_SP] - 1]], (reg[REG_SP] - stack[reg[REG_SP] - 1]) * sizeof(nightVM_l));
+      memmove(&stack[stack[reg[REG_SP] - 1] + 1], &stack[stack[reg[REG_SP] - 1]], (reg[REG_SP] - stack[reg[REG_SP] - 1]) * sizeof(ysm_l));
 
       stack[stack[reg[REG_SP] - 1]] = l;
       reg[REG_SP]--;
@@ -1770,7 +1770,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_POPA:
-      memmove(&stack[stack[reg[REG_SP] - 1]], &stack[stack[reg[REG_SP] - 1] + 1], (reg[REG_SP] - (stack[reg[REG_SP] - 1] + 1)) * sizeof(nightVM_l));
+      memmove(&stack[stack[reg[REG_SP] - 1]], &stack[stack[reg[REG_SP] - 1] + 1], (reg[REG_SP] - (stack[reg[REG_SP] - 1] + 1)) * sizeof(ysm_l));
 
       reg[REG_SP] -= 2;
 
@@ -2574,7 +2574,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
       break;
 
     case OP_DBPRINT:
-      fprintf(stderr, "%" PRINVML "\n", stack[reg[REG_SP] - 1]);
+      fprintf(stderr, "%" PRIYSML "\n", stack[reg[REG_SP] - 1]);
       reg[REG_SP]--;
 
       reg[REG_PC]++;
@@ -2591,7 +2591,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      if ((str = cseq2str(&((nightVM_c *) *code)[stack[reg[REG_SP] - 1]])) == NULL) {
+      if ((str = cseq2str(&((ysm_c *) *code)[stack[reg[REG_SP] - 1]])) == NULL) {
 	*exit_status = 1;
 	return ERR_FAILED_ALLOCATION;
       }
@@ -2649,7 +2649,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	return ERR_TRAP;
       }
 
-      if ((str = cseq2str(&((nightVM_c *) *code)[stack[reg[REG_SP]]])) == NULL) {
+      if ((str = cseq2str(&((ysm_c *) *code)[stack[reg[REG_SP]]])) == NULL) {
 	*exit_status = 1;
 	return ERR_FAILED_ALLOCATION;
       }
@@ -2666,7 +2666,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 
       if ((hash_table_entry_ret = hsearch(hash_table_entry, FIND)) != NULL) {
 	void *object = hash_table_entry_ret->data;
-	if ((str = cseq2str(&((nightVM_c *) *code)[stack[reg[REG_SP] + 1]])) == NULL) {
+	if ((str = cseq2str(&((ysm_c *) *code)[stack[reg[REG_SP] + 1]])) == NULL) {
 	  *exit_status = 1;
 	  return ERR_FAILED_ALLOCATION;
 	}
@@ -2703,7 +2703,7 @@ enum error eval(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui
 	  free(str);
 	}
 
-	symbol = (void (*)(int argc, char **argv, nightVM_l *stack, void **code, nightVM_ui code_align, void **heap, nightVM_ui heap_align, nightVM_l ssz, nightVM_l *hsz, nightVM_l *sp, nightVM_l *cs, nightVM_l pc, nightVM_l lop, nightVM_l *call_stack, nightVM_l clp, nightVM_l *gpr)) hash_table_entry_ret->data;
+	symbol = (void (*)(int argc, char **argv, ysm_l *stack, void **code, ysm_ui code_align, void **heap, ysm_ui heap_align, ysm_l ssz, ysm_l *hsz, ysm_l *sp, ysm_l *cs, ysm_l pc, ysm_l lop, ysm_l *call_stack, ysm_l clp, ysm_l *gpr)) hash_table_entry_ret->data;
 
 	symbol(argc, argv, stack, code, code_align, heap, heap_align, reg[REG_SSZ], &reg[REG_HSZ], &reg[REG_SP], &reg[REG_CS], reg[REG_PC], reg[REG_LOP], call_stack, reg[REG_CLP], &reg[REG_GPR0]);
 

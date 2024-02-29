@@ -17,10 +17,10 @@ enum file_format {
   FFORM_ESFF23X
 };
 
-static int throw_err(nightVM_l pc, nightVM_l sp, nightVM_l ia, nightVM_l lop, unsigned char code) {
+static int throw_err(ysm_l pc, ysm_l sp, ysm_l ia, ysm_l lop, unsigned char code) {
   char *err_arr[]={"error: panic", "error: failed to open library", "error: failed to invoke symbol", "error: illegal instruction", "error: access outside of code", "implementation error: internal allocation failed", "implementation error: failed to open input", "implementation error: failed to read from input", "implementation error: input is not a valid ESXF", "implementation error: invalid ESXF magic number", "implementation error: unsupported ESFF used", "implementation error: failed to create hash table", "implementation error: failed to put entry into hash table"};
 
-  fprintf(stderr,"%s (at %" PRINVML "; sp set to %" PRINVML "; ia set to %" PRINVML "; lop set to %" PRINVML ")\n", err_arr[code], pc, sp, ia, lop);
+  fprintf(stderr,"%s (at %" PRIYSML "; sp set to %" PRIYSML "; ia set to %" PRIYSML "; lop set to %" PRIYSML ")\n", err_arr[code], pc, sp, ia, lop);
 
   return code;
 }
@@ -36,14 +36,14 @@ static void *aligned_malloc(size_t alignment, size_t size) {
 }
 
 int main(int argc, char *argv[]) {
-  nightVM_l *stack;
+  ysm_l *stack;
   void *code;
   void *heap;
-  nightVM_l *call_stack;
-  nightVM_ui code_alignment, heap_alignment;
-  nightVM_l reg[REG_GPR7 + 1];
+  ysm_l *call_stack;
+  ysm_ui code_alignment, heap_alignment;
+  ysm_l reg[REG_GPR7 + 1];
 
-  char *in_file_name = "./a.esxf";
+  char *infile_name = "./a.esxf";
   bool randomize_code_base = false;
 
   int args_start = 0;
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	return 1;
       }
       else {
-	in_file_name = argv[i];
+	infile_name = argv[i];
 
 	i++;
 	args_start = i;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 	if (strcmp(argv[i], "ESFF23") == 0) {
 	  fformat = FFORM_ESFF23;
 	}
-	else if (strcmp(argv[i],"ESFF23x") == 0) {
+	else if (strcmp(argv[i], "ESFF23x") == 0) {
 	  fformat = FFORM_ESFF23X;
 	}
 	else{
@@ -99,33 +99,33 @@ int main(int argc, char *argv[]) {
     }
     else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--credits") == 0) {
       printf("\
-					Copyright (C) 2023  Somdipto Chakraborty\n\n\
-					\
-					This program is free software: you can redistribute it and/or modify\n\
-					it under the terms of the GNU General Public License as published by\n\
-					the Free Software Foundation, either version 3 of the License, or\n\
-					(at your option) any later version.\n\n\
-					\
-					This program is distributed in the hope that it will be useful,\n\
-					but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-					MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-					GNU General Public License for more details.\n\n\
-					\
-					You should have received a copy of the GNU General Public License\n\
-					along with this program.  If not, see <https://www.gnu.org/licenses/>.\n");
+    Copyright (C) 2023  Somdipto Chakraborty\n\n\
+\
+    This program is free software: you can redistribute it and/or modify\n\
+    it under the terms of the GNU General Public License as published by\n\
+    the Free Software Foundation, either version 3 of the License, or\n\
+    (at your option) any later version.\n\n\
+\
+    This program is distributed in the hope that it will be useful,\n\
+    but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+    GNU General Public License for more details.\n\n\
+\
+    You should have received a copy of the GNU General Public License\n\
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.\n");
 
       return 0;
     }
     else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--about") == 0) {
       printf("\
-					NightVM is an implementation of YSM.\n\
-					This program is licensed under GPLv3 Copyright (C) 2023 Somdipto Chakraborty.\n");
+    NightVM is an implementation of YSM.\n\
+    This program is licensed under GPLv3 Copyright (C) 2023 Somdipto Chakraborty.\n");
 
       return 0;
     }
     else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
       fprintf(stderr, "    --help (-h): display this message and quit\n");
-      fprintf(stderr, "*   --input (-i) file [args...]: specify the input file (default: %s); optional arguments following the file are supplied to the loaded program\n", in_file_name);
+      fprintf(stderr, "*   --input (-i) file [args...]: specify the input file (default: %s); optional arguments following the file are supplied to the loaded program\n", infile_name);
       fprintf(stderr, "    --fileformat (-fform) fileformat: specify the input file format (default: ESFF23x)\n");
       fprintf(stderr, "    --randomize-code-base (-rc): randomize the base address of the code\n");
       fprintf(stderr, "    --credits (-c): display license information and quit\n");
@@ -144,30 +144,30 @@ int main(int argc, char *argv[]) {
 
   enum error ret;
   if (fformat == FFORM_ESFF23) {
-    if ((ret = read_esff23(in_file_name, &code, &code_alignment, &heap_alignment, reg)) != ERR_SUCCESS) {
+    if ((ret = read_esff23(infile_name, &code, &code_alignment, &heap_alignment, reg)) != ERR_SUCCESS) {
       return throw_err(0, 0, 0, OP_NOP, ret - 1);
     }
   }
   else if (fformat == FFORM_ESFF23X) {
-    if ((ret = read_esff23x(in_file_name, &code, &code_alignment, &heap_alignment, reg)) != ERR_SUCCESS) {
+    if ((ret = read_esff23x(infile_name, &code, &code_alignment, &heap_alignment, reg)) != ERR_SUCCESS) {
       return throw_err(0, 0, 0, OP_NOP, ret - 1);
     }
   }
 
   srand(time(NULL));
 
-  nightVM_l code_base = 0;
+  ysm_l code_base = 0;
 
   if (randomize_code_base) {
     void *nonrandomized_code = code;
 
     code_base = (rand() % MAX_CODE_BASE) + 1;
 
-    if (code_base % _Alignof(nightVM_l) != 0) {
-      code_base += (code_base + _Alignof(nightVM_l) - 1) - ((code_base + _Alignof(nightVM_l) - 1) % _Alignof(nightVM_l)) - code_base;
+    if (code_base % _Alignof(ysm_l) != 0) {
+      code_base += (code_base + _Alignof(ysm_l) - 1) - ((code_base + _Alignof(ysm_l) - 1) % _Alignof(ysm_l)) - code_base;
     }
 
-    if ((code = aligned_malloc(code_alignment * sizeof(nightVM_uc), (reg[REG_CS] + code_base) * sizeof(nightVM_uc))) == NULL) {
+    if ((code = aligned_malloc(code_alignment * sizeof(ysm_uc), (reg[REG_CS] + code_base) * sizeof(ysm_uc))) == NULL) {
       free(nonrandomized_code);
 
       return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_ALLOCATION - 1);
@@ -183,25 +183,25 @@ int main(int argc, char *argv[]) {
 
   reg[REG_CB] = code_base;
 
-  if ((stack = aligned_malloc(_Alignof(nightVM_l), reg[REG_SSZ] * sizeof(nightVM_l))) == NULL) {
+  if ((stack = aligned_malloc(_Alignof(ysm_l), reg[REG_SSZ] * sizeof(ysm_l))) == NULL) {
     free(code);
 
     return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_ALLOCATION - 1);
   }
 
-  if ((heap = aligned_malloc(heap_alignment * sizeof(nightVM_uc), reg[REG_HSZ] * sizeof(nightVM_uc))) == NULL) {
+  if ((heap = aligned_malloc(heap_alignment * sizeof(ysm_uc), reg[REG_HSZ] * sizeof(ysm_uc))) == NULL) {
     free(code);
     free(stack);
 
     return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_ALLOCATION - 1);
   }
 
-  if ((call_stack = aligned_malloc(_Alignof(nightVM_l), CALLSTACK_SIZE * sizeof(nightVM_l))) == NULL) {
+  if ((call_stack = aligned_malloc(_Alignof(ysm_l), CALLSTACK_SIZE * sizeof(ysm_l))) == NULL) {
     free(code);
     free(stack);
     free(call_stack);
 
-    return throw_err(0,0,0,OP_NOP,ERR_FAILED_ALLOCATION - 1);
+    return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_ALLOCATION - 1);
   }
 
   char **opened_libs;
@@ -213,19 +213,20 @@ int main(int argc, char *argv[]) {
     return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_ALLOCATION - 1);
   }
 
-  opened_libs[0]=NULL;
+  opened_libs[0] = NULL;
 
-  size_t lib_pt=0;
-  size_t sym_pt=0;
+  size_t lib_pt = 0;
 
   char **lib_names;
-  if ((lib_names=malloc(LIBS_N*sizeof(char *)))==NULL) {
+  if ((lib_names = malloc(LIBS_N * sizeof(char *))) == NULL) {
     free(code);
     free(stack);
     free(call_stack);
 
     return throw_err(0, 0, 0, OP_NOP, ERR_FAILED_ALLOCATION - 1);
   }
+
+  size_t sym_pt = 0;
 
   char **sym_names;
   if ((sym_names = malloc(SYMS_N * sizeof(char *))) == NULL) {
