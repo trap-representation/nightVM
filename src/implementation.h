@@ -70,8 +70,8 @@ typedef char ysm_c;
 #define NVMC_MIN CHAR_MIN
 
 #define PRINVMUNS "lu"
-#define PRIYSMxUNS "lx"
-#define PRIYSMoUNS "lo"
+#define PRINVMxUNS "lx"
+#define PRINVMoUNS "lo"
 #define PRIYSML "ld"
 #define PRIYSMUI "u"
 #define PRIYSMxUI "x"
